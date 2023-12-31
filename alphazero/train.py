@@ -64,8 +64,8 @@ class PolicyValueLoss(nn.Module):
 class TrainModel:
     """ 训练模型 """
 
-    def __init__(self, board_len=9, lr=1e-4, n_self_plays=10, n_mcts_iters=500,
-                 n_feature_planes=4, batch_size=500, start_train_size=500, check_frequency=100,
+    def __init__(self, board_len=7, lr=1e-4, n_self_plays=10, n_mcts_iters=500,
+                 n_feature_planes=13, batch_size=500, start_train_size=500, check_frequency=100,
                  n_test_games=10, c_puct=4, is_use_gpu=True, is_save_game=False, **kwargs):
         """
         Parameters
@@ -178,8 +178,7 @@ class TrainModel:
         if self.is_save_game:
             self.games.append(action_list)
 
-        self_play_data = SelfPlayData(
-            pi_list=pi_list, z_list=z_list, feature_planes_list=feature_planes_list)
+        self_play_data = SelfPlayData(pi_list=pi_list, z_list=z_list, feature_planes_list=feature_planes_list)
         return self_play_data
 
     @exception_handler
@@ -191,11 +190,12 @@ class TrainModel:
 
             # 如果数据集中的数据量大于 start_train_size 就进行一次训练
             if len(self.dataset) >= self.start_train_size:
-                data_loader = iter(DataLoader(
-                    self.dataset, self.batch_size, shuffle=True, drop_last=False))
+                data_loader = iter(DataLoader(self.dataset, self.batch_size, shuffle=True, drop_last=False))
+
                 print('💊 开始训练...')
 
                 self.policy_value_net.train()
+
                 # 随机选出一批数据来训练，防止过拟合
                 feature_planes, pi, z = next(data_loader)
                 feature_planes = feature_planes.to(self.device)

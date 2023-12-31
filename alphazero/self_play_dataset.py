@@ -12,7 +12,7 @@ SelfPlayData = namedtuple(
 class SelfPlayDataSet(Dataset):
     """ 自我博弈数据集类，每个样本为元组 `(feature_planes, pi, z)` """
 
-    def __init__(self, board_len=9):
+    def __init__(self, board_len=7):
         super().__init__()
         self.__data_deque = deque(maxlen=10000)
         self.board_len = board_len
@@ -35,15 +35,10 @@ class SelfPlayDataSet(Dataset):
         feature_planes_list = self_play_data.feature_planes_list
         # 使用翻转和镜像扩充已有数据集
         for z, pi, feature_planes in zip(z_list, pi_list, feature_planes_list):
-            for i in range(4):
-                # 逆时针旋转 i*90°
-                rot_features = torch.rot90(Tensor(feature_planes), i, (1, 2))
-                rot_pi = torch.rot90(Tensor(pi.reshape(n, n)), i)
-                self.__data_deque.append(
-                    (rot_features, rot_pi.flatten(), z))
 
-                # 对逆时针旋转后的数组进行水平翻转
-                flip_features = torch.flip(rot_features, [2])
-                flip_pi = torch.fliplr(rot_pi)
-                self.__data_deque.append(
-                    (flip_features, flip_pi.flatten(), z))
+            self.__data_deque.append((feature_planes, pi.flatten(), z))
+
+            # 沿主对角线翻转
+            flip_features = torch.transpose(Tensor(feature_planes), 1, 2)
+            flip_pi = torch.transpose(Tensor(pi.reshape(n, n)), 0, 1)
+            self.__data_deque.append((flip_features, flip_pi.flatten(), z))

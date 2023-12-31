@@ -104,7 +104,7 @@ class ValueHead(nn.Module):
 class PolicyValueNet(nn.Module):
     """ 策略价值网络 """
 
-    def __init__(self, board_len=9, n_feature_planes=6, is_use_gpu=True):
+    def __init__(self, board_len=7, n_feature_planes=13, is_use_gpu=True):
         """
         Parameters
         ----------
