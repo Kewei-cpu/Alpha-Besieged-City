@@ -134,18 +134,17 @@ class ChessBoard:
         if self.array_to_coordinates(self.state[3])[0] not in \
                 self.reachable_positions(self.state[0], self.state[3],
                                          self.state[6], self.state[9],
-                                         ignore_other_player=True, step=self.board_len * 2):
+                                         ignore_other_player=True, step=self.board_len ** 2):
             x_territory = self.reachable_positions(self.state[0], self.state[3],
                                                    self.state[6], self.state[9],
-                                                   ignore_other_player=True, step=self.board_len * 2)
+                                                   ignore_other_player=True, step=self.board_len ** 2)
             o_territory = self.reachable_positions(self.state[3], self.state[0],
                                                    self.state[6], self.state[9],
-                                                   ignore_other_player=True, step=self.board_len * 2)
+                                                   ignore_other_player=True, step=self.board_len ** 2)
             return True, 0 if len(x_territory) > len(o_territory) else 1 if len(x_territory) < len(
                 o_territory) else None
 
         return False, None
-
 
     def get_feature_planes(self) -> torch.Tensor:
         """
@@ -187,11 +186,10 @@ class ChessBoard:
         :param other_player_pos: 对方位置， one-hot编码
         :param horizontal_wall: 横向墙， one-hot编码
         :param vertical_wall: 纵向墙， one-hot编码
-        :param step: 最大步数（设置为棋盘边长的两倍即可遍历全部位置）
+        :param step: 最大步数（设置为棋盘边长的平方即可遍历全部位置）
         :param ignore_other_player: 是否忽略对方，True代表可以经过对方位置
         :return: 可到达的位置列表
         """
-
 
         pos = self.array_to_coordinates(pos)[0]
 
@@ -203,22 +201,22 @@ class ChessBoard:
             for j in range(len(queue)):
                 current = queue.pop(0)
                 if current[0] - 1 >= 0 and horizontal_wall[current[0] - 1][current[1]] == 0 and [
-                        current[0] - 1, current[1]] not in visited and (
+                    current[0] - 1, current[1]] not in visited and (
                         not other_player_pos[current[0] - 1, current[1]] or ignore_other_player):
                     queue.append([current[0] - 1, current[1]])
                     visited.append([current[0] - 1, current[1]])
                 if current[1] - 1 >= 0 and vertical_wall[current[0]][current[1] - 1] == 0 and [
-                        current[0], current[1] - 1] not in visited and (
+                    current[0], current[1] - 1] not in visited and (
                         not other_player_pos[current[0], current[1] - 1] or ignore_other_player):
                     queue.append([current[0], current[1] - 1])
                     visited.append([current[0], current[1] - 1])
                 if current[0] + 1 < self.board_len and horizontal_wall[current[0]][current[1]] == 0 and [
-                        current[0] + 1, current[1]] not in visited and (
+                    current[0] + 1, current[1]] not in visited and (
                         not other_player_pos[current[0] + 1, current[1]] or ignore_other_player):
                     queue.append([current[0] + 1, current[1]])
                     visited.append([current[0] + 1, current[1]])
                 if current[1] + 1 < self.board_len and vertical_wall[current[0]][current[1]] == 0 and [
-                        current[0], current[1] + 1] not in visited and (
+                    current[0], current[1] + 1] not in visited and (
                         not other_player_pos[current[0], current[1] + 1] or ignore_other_player):
                     queue.append([current[0], current[1] + 1])
                     visited.append([current[0], current[1] + 1])

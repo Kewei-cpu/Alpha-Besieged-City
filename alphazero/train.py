@@ -286,9 +286,9 @@ class TrainModel:
         game_name: str
             自对弈棋谱名称，不包含后缀
         """
-        os.makedirs('../model', exist_ok=True)
+        os.makedirs('./model', exist_ok=True)
 
-        path = f'../model/{model_name}.pth'
+        path = f'./model/{model_name}.pth'
         self.policy_value_net.eval()
         torch.save(self.policy_value_net, path)
         print(f'🎉 已将当前模型保存到 {os.path.join(os.getcwd(), path)}')
@@ -313,8 +313,7 @@ class TrainModel:
         os.makedirs('../model', exist_ok=True)
 
         best_model = 'best_policy_value_net.pth'
-        history_models = sorted(
-            [i for i in os.listdir('../model') if i.startswith('last')])
+        history_models = sorted([i for i in os.listdir('./model') if i.startswith('last')])
 
         # 从历史模型中选取最新模型
         model = history_models[-1] if history_models else best_model
