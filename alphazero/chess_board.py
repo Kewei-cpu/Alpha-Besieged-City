@@ -11,6 +11,9 @@ class ChessBoard:
     棋盘类，用于存储棋盘状态和落子，判断游戏是否结束等
     """
 
+    Player_X = 0
+    Player_O = 1
+
     action_to_pos = {
         0: (-3, 0),
         1: (-2, -1), 2: (-2, 0), 3: (-2, 1),
@@ -115,7 +118,7 @@ class ChessBoard:
             self.array_to_coordinates(self.state[active_player])[0][1]] = 1
 
         # 更新谁该走、合法位置
-        self.state[12] = np.ones((self.board_len, self.board_len)) - self.state[12]
+        self.state[12] = np.ones((self.board_len, self.board_len), dtype=int) - self.state[12]
         self.available_actions = self.get_available_actions()
 
         self.step_count += 1
@@ -123,7 +126,7 @@ class ChessBoard:
     def is_game_over(self) -> Tuple[bool, int]:
         """
         判断游戏是否结束
-        :return: （是否结束， 胜利者） 胜利者为 1 代表 X 胜利， -1 代表 O 胜利， 0 代表平局
+        :return: （是否结束， 胜利者） 胜利者为 0 代表 X 胜利， 1 代表 O 胜利， None 代表平局
         """
 
         if self.array_to_coordinates(self.state[3])[0] not in \
@@ -136,9 +139,10 @@ class ChessBoard:
             o_territory = self.reachable_positions(self.state[3], self.state[0],
                                                    self.state[6], self.state[9],
                                                    ignore_other_player=True, step=self.board_len * 2)
-            return True, np.sign(len(x_territory) - len(o_territory))
+            return True, 0 if len(x_territory) > len(o_territory) else 1 if len(x_territory) < len(
+                o_territory) else None
 
-        return False, 0
+        return False, None
 
     def get_feature_planes(self) -> torch.Tensor:
         """
@@ -253,8 +257,7 @@ class ChessBoard:
                     coordinates.append((i, j))
         return coordinates
 
-    @staticmethod
-    def coordinates_to_array(coordinates: list, shape: tuple = (7, 7)) -> np.ndarray:
+    def coordinates_to_array(self, coordinates: list, shape: tuple = (7, 7)) -> np.ndarray:
         """
         根据坐标列表生成2D数组
         :param coordinates: 坐标列表

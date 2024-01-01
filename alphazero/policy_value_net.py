@@ -49,7 +49,7 @@ class ResidueBlock(nn.Module):
 class PolicyHead(nn.Module):
     """ 策略头 """
 
-    def __init__(self, in_channels=128, board_len=9):
+    def __init__(self, in_channels=128, board_len=7, output_dim=100):
         """
         Parameters
         ----------
@@ -63,7 +63,7 @@ class PolicyHead(nn.Module):
         self.board_len = board_len
         self.in_channels = in_channels
         self.conv = ConvBlock(in_channels, 2, 1)
-        self.fc = nn.Linear(2 * board_len ** 2, board_len ** 2)
+        self.fc = nn.Linear(2 * board_len ** 2, output_dim)
 
     def forward(self, x):
         x = self.conv(x)
@@ -74,7 +74,7 @@ class PolicyHead(nn.Module):
 class ValueHead(nn.Module):
     """ 价值头 """
 
-    def __init__(self, in_channels=128, board_len=9):
+    def __init__(self, in_channels=128, board_len=7):
         """
         Parameters
         ----------
@@ -104,7 +104,7 @@ class ValueHead(nn.Module):
 class PolicyValueNet(nn.Module):
     """ 策略价值网络 """
 
-    def __init__(self, board_len=7, n_feature_planes=13, is_use_gpu=True):
+    def __init__(self, board_len=7, n_feature_planes=13, policy_output_dim=100,  is_use_gpu=True):
         """
         Parameters
         ----------
@@ -121,7 +121,7 @@ class PolicyValueNet(nn.Module):
         self.device = torch.device('cuda:0' if is_use_gpu else 'cpu')
         self.conv = ConvBlock(n_feature_planes, 128, 3, padding=1)
         self.residues = nn.Sequential(*[ResidueBlock(128, 128) for i in range(4)])
-        self.policy_head = PolicyHead(128, board_len)
+        self.policy_head = PolicyHead(128, board_len, policy_output_dim)
         self.value_head = ValueHead(128, board_len)
 
     def forward(self, x):

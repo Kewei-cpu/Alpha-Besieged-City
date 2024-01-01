@@ -65,7 +65,7 @@ class TrainModel:
     """ 训练模型 """
 
     def __init__(self, board_len=7, lr=1e-4, n_self_plays=10, n_mcts_iters=500,
-                 n_feature_planes=13, batch_size=500, start_train_size=500, check_frequency=100,
+                 n_feature_planes=13, policy_output_dim=100, batch_size=500, start_train_size=500, check_frequency=100,
                  n_test_games=10, c_puct=4, is_use_gpu=True, is_save_game=False, **kwargs):
         """
         Parameters
@@ -108,6 +108,7 @@ class TrainModel:
         """
         self.c_puct = c_puct
         self.is_use_gpu = is_use_gpu
+        self.policy_output_dim = policy_output_dim
         self.batch_size = batch_size
         self.n_self_plays = n_self_plays
         self.n_test_games = n_test_games
@@ -120,7 +121,8 @@ class TrainModel:
 
         # 创建策略-价值网络和蒙特卡洛搜索树
         self.policy_value_net = self.__get_policy_value_net(board_len)
-        self.mcts = AlphaZeroMCTS(self.policy_value_net, c_puct=c_puct, n_iters=n_mcts_iters, is_self_play=True)
+        self.mcts = AlphaZeroMCTS(self.policy_value_net, c_puct=c_puct, n_iters=n_mcts_iters,
+                                  policy_dim=policy_output_dim, is_self_play=True)
 
         # 创建优化器和损失函数
         self.optimizer = optim.Adam(self.policy_value_net.parameters(), lr=lr, weight_decay=1e-4)
@@ -157,7 +159,7 @@ class TrainModel:
 
             # 保存每一步的数据
             feature_planes_list.append(self.chess_board.get_feature_planes())
-            players.append(self.chess_board.current_player)
+            players.append(self.chess_board.state[12, 0, 0])
             action_list.append(action)
             pi_list.append(pi)
             self.chess_board.do_action(action)
@@ -237,7 +239,7 @@ class TrainModel:
         best_model = torch.load(model_path)  # type:PolicyValueNet
         best_model.eval()
         best_model.set_device(self.is_use_gpu)
-        mcts = AlphaZeroMCTS(best_model, self.c_puct, self.n_mcts_iters)
+        mcts = AlphaZeroMCTS(best_model, self.c_puct, self.n_mcts_iters, self.policy_output_dim)
         self.mcts.set_self_play(False)
         self.policy_value_net.eval()
 
@@ -252,11 +254,12 @@ class TrainModel:
                 # 当前模型走一步
                 is_over, winner = self.__do_mcts_action(self.mcts)
                 if is_over:
-                    n_wins += int(winner == ChessBoard.BLACK)
+                    n_wins += int(winner == self.chess_board.Player_X)
                     break
                 # 历史最优模型走一步
                 is_over, winner = self.__do_mcts_action(mcts)
                 if is_over:
+                    n_wins += int(winner == self.chess_board.Player_X)
                     break
 
         # 如果胜率大于 55%，就保存当前模型为最优模型
@@ -322,6 +325,7 @@ class TrainModel:
             net.set_device(self.is_use_gpu)
         else:
             net = PolicyValueNet(n_feature_planes=self.chess_board.n_feature_planes,
+                                 policy_output_dim=self.policy_output_dim,
                                  is_use_gpu=self.is_use_gpu, board_len=board_len).to(self.device)
 
         return net

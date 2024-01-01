@@ -6,21 +6,11 @@ import numpy as np
 from alphazero.chess_board import ChessBoard
 
 if __name__ == '__main__':
-    timer = time.time()
-    steps = []
-    wins = []
-    n = 500
 
-    for i in range(n):
-        board = ChessBoard()
-        while True:
-            if board.is_game_over()[0]:
-                break
-            action = random.choice(board.get_available_actions())
-            board.do_action(action)
-        steps.append(board.step_count)
-        wins.append(board.is_game_over()[1])
-
-    print("avg time", (time.time() - timer) / n)
-    print("avg step", np.mean(steps))
-    print("avg score", np.mean(wins))
+    board = ChessBoard()
+    while True:
+        if board.is_game_over()[0]:
+            break
+        action = random.choice(board.get_available_actions())
+        board.do_action(action)
+    print(board.get_feature_planes())

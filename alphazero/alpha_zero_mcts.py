@@ -11,7 +11,8 @@ from .policy_value_net import PolicyValueNet
 class AlphaZeroMCTS:
     """ 基于策略-价值网络的蒙特卡洛搜索树 """
 
-    def __init__(self, policy_value_net: PolicyValueNet, c_puct: float = 4, n_iters=1200, is_self_play=False) -> None:
+    def __init__(self, policy_value_net: PolicyValueNet, c_puct: float = 4, n_iters=1200, policy_dim=100,
+                 is_self_play=False) -> None:
         """
         Parameters
         ----------
@@ -29,6 +30,7 @@ class AlphaZeroMCTS:
         """
         self.c_puct = c_puct
         self.n_iters = n_iters
+        self.policy_dim = policy_dim
         self.is_self_play = is_self_play
         self.policy_value_net = policy_value_net
         self.root = Node(prior_prob=1, parent=None)
@@ -68,7 +70,7 @@ class AlphaZeroMCTS:
                     p = 0.75 * p + 0.25 * np.random.dirichlet(0.03 * np.ones(len(p)))
                 node.expand(zip(board.available_actions, p))
             elif winner is not None:
-                value = 1 if winner == board.current_player else -1
+                value = 1 if winner == board.state[12, 0, 0] else -1
             else:
                 value = 0
 
@@ -86,7 +88,7 @@ class AlphaZeroMCTS:
 
         if self.is_self_play:
             # 创建维度为 board_len^2 的 π
-            pi = np.zeros(chess_board.board_len ** 2)
+            pi = np.zeros(self.policy_dim)
             pi[actions] = pi_
             # 更新根节点
             self.root = self.root.children[action]
