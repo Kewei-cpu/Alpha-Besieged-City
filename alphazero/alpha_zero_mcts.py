@@ -48,7 +48,7 @@ class AlphaZeroMCTS:
         action: int
             当前局面下的最佳动作
 
-        pi: `np.ndarray` of shape `(board_len^2, )`
+        pi: `np.ndarray` of shape `(100, )`
             执行动作空间中每个动作的概率，只在 `is_self_play=True` 模式下返回
         """
         for i in range(self.n_iters):
@@ -87,7 +87,7 @@ class AlphaZeroMCTS:
         action = int(np.random.choice(actions, p=pi_))
 
         if self.is_self_play:
-            # 创建维度为 board_len^2 的 π
+            # 创建维度为 100 的 π
             pi = np.zeros(self.policy_dim)
             pi[actions] = pi_
             # 更新根节点

@@ -35,7 +35,7 @@ class ChessBoard:
         self.board_len = board_len
         self.n_feature_planes = n_feature_planes
 
-        self.state = np.zeros((self.n_feature_planes, self.board_len, self.board_len), dtype=int)
+        self.state = np.zeros((self.n_feature_planes, self.board_len, self.board_len))
         # index 0  X 位置
         #       1  X 上一个位置
         #       2  X 上上个位置
@@ -63,7 +63,7 @@ class ChessBoard:
 
     def clear_board(self):
         """ 清空棋盘 """
-        self.state = np.zeros((self.n_feature_planes, self.board_len, self.board_len), dtype=int)
+        self.state = np.zeros((self.n_feature_planes, self.board_len, self.board_len))
         self.state[0, 0, 0] = 1
         self.state[3, self.board_len - 1, self.board_len - 1] = 1
 
@@ -120,7 +120,7 @@ class ChessBoard:
             self.array_to_coordinates(self.state[active_player])[0][1]] = 1
 
         # 更新谁该走、合法位置
-        self.state[12] = np.ones((self.board_len, self.board_len), dtype=int) - self.state[12]
+        self.state[12] = np.ones((self.board_len, self.board_len)) - self.state[12]
         self.available_actions = self.get_available_actions()
 
         self.step_count += 1
@@ -153,7 +153,7 @@ class ChessBoard:
         :return: torch.Tensor of shape (n_feature_planes, board_len, board_len)
         """
 
-        return torch.tensor(self.state)
+        return torch.tensor(self.state, dtype=torch.float)
 
     def get_available_actions(self) -> List[int]:
         """
@@ -268,7 +268,7 @@ class ChessBoard:
         :param shape: 2D数组形状
         :return: 2D数组，只有坐标列表中的位置为1，其余为0
         """
-        array = np.zeros(shape=shape, dtype=int)
+        array = np.zeros(shape=shape)
         for coordinate in coordinates:
             array[coordinate[0]][coordinate[1]] = 1
         return array

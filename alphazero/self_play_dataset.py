@@ -44,7 +44,7 @@ class SelfPlayDataSet(Dataset):
         feature_planes_list = self_play_data.feature_planes_list
         # 使用翻转和镜像扩充已有数据集
         for z, pi, feature_planes in zip(z_list, pi_list, feature_planes_list):
-            self.__data_deque.append((feature_planes, pi.flatten(), z))
+            self.__data_deque.append((feature_planes, Tensor(pi), z))
 
             # 沿主对角线翻转
             flip_features = torch.transpose(Tensor(feature_planes.clone().detach()), 1, 2)
@@ -53,7 +53,7 @@ class SelfPlayDataSet(Dataset):
             flip_features[6:9] = _[9:12]
             flip_features[9:12] = _[6:9]
 
-            flip_pi = torch.zeros_like(pi)
+            flip_pi = torch.zeros_like(Tensor(pi))
             for i in range(len(pi)):
                 flip_pi[self.flip_dict[i]] = pi[i]
 
