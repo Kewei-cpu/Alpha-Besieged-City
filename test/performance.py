@@ -3,7 +3,7 @@ import time
 
 import numpy as np
 
-from alphazero.chess_board import ChessBoard
+from alphazero import ChessBoard
 
 if __name__ == '__main__':
     timer = time.time()

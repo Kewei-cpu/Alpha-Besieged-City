@@ -1,4 +1,6 @@
 # coding: utf-8
+import random
+import time
 from copy import deepcopy
 from typing import Tuple, List
 
@@ -144,6 +146,7 @@ class ChessBoard:
 
         return False, None
 
+
     def get_feature_planes(self) -> torch.Tensor:
         """
         获取特征平面
@@ -164,19 +167,20 @@ class ChessBoard:
 
         available_move = []
 
+        reachable_positions = self.reachable_positions(active_player_pos, passive_player_pos,
+                                                       horizontal_wall, vertical_wall)
+
         for move in range(25):  # 移动位置， 详见self.action_to_pos
-            next_pos = (self.action_to_pos[move][0] + self.array_to_coordinates(active_player_pos)[0][0],
-                        self.action_to_pos[move][1] + self.array_to_coordinates(active_player_pos)[0][1])
+            next_pos = [self.action_to_pos[move][0] + self.array_to_coordinates(active_player_pos)[0][0],
+                        self.action_to_pos[move][1] + self.array_to_coordinates(active_player_pos)[0][1]]
             for wall in range(4):  # 放墙位置， 0-上；1-左；2-下；3-右
-                if (next_pos in self.reachable_positions(active_player_pos, passive_player_pos,
-                                                         horizontal_wall, vertical_wall)
-                        and self.placeable(next_pos, wall, horizontal_wall, vertical_wall)):
+                if next_pos in reachable_positions and self.placeable(next_pos, wall, horizontal_wall, vertical_wall):
                     available_move.append(move * 4 + wall)
 
         return available_move
 
     def reachable_positions(self, pos, other_player_pos, horizontal_wall, vertical_wall, step=3,
-                            ignore_other_player=False) -> List[Tuple[int, int]]:
+                            ignore_other_player=False) -> list[list[int, int]]:
         """
         可到达的位置，采用BFS遍历
         :param pos: 起始位置， one-hot编码
@@ -188,7 +192,9 @@ class ChessBoard:
         :return: 可到达的位置列表
         """
 
+
         pos = self.array_to_coordinates(pos)[0]
+
         queue = [pos]
         visited = [pos]
         for i in range(step):
@@ -196,26 +202,26 @@ class ChessBoard:
                 break
             for j in range(len(queue)):
                 current = queue.pop(0)
-                if current[0] - 1 >= 0 and horizontal_wall[current[0] - 1][current[1]] == 0 and (
-                        current[0] - 1, current[1]) not in visited and (
+                if current[0] - 1 >= 0 and horizontal_wall[current[0] - 1][current[1]] == 0 and [
+                        current[0] - 1, current[1]] not in visited and (
                         not other_player_pos[current[0] - 1, current[1]] or ignore_other_player):
-                    queue.append((current[0] - 1, current[1]))
-                    visited.append((current[0] - 1, current[1]))
-                if current[1] - 1 >= 0 and vertical_wall[current[0]][current[1] - 1] == 0 and (
-                        current[0], current[1] - 1) not in visited and (
+                    queue.append([current[0] - 1, current[1]])
+                    visited.append([current[0] - 1, current[1]])
+                if current[1] - 1 >= 0 and vertical_wall[current[0]][current[1] - 1] == 0 and [
+                        current[0], current[1] - 1] not in visited and (
                         not other_player_pos[current[0], current[1] - 1] or ignore_other_player):
-                    queue.append((current[0], current[1] - 1))
-                    visited.append((current[0], current[1] - 1))
-                if current[0] + 1 < self.board_len and horizontal_wall[current[0]][current[1]] == 0 and (
-                        current[0] + 1, current[1]) not in visited and (
+                    queue.append([current[0], current[1] - 1])
+                    visited.append([current[0], current[1] - 1])
+                if current[0] + 1 < self.board_len and horizontal_wall[current[0]][current[1]] == 0 and [
+                        current[0] + 1, current[1]] not in visited and (
                         not other_player_pos[current[0] + 1, current[1]] or ignore_other_player):
-                    queue.append((current[0] + 1, current[1]))
-                    visited.append((current[0] + 1, current[1]))
-                if current[1] + 1 < self.board_len and vertical_wall[current[0]][current[1]] == 0 and (
-                        current[0], current[1] + 1) not in visited and (
+                    queue.append([current[0] + 1, current[1]])
+                    visited.append([current[0] + 1, current[1]])
+                if current[1] + 1 < self.board_len and vertical_wall[current[0]][current[1]] == 0 and [
+                        current[0], current[1] + 1] not in visited and (
                         not other_player_pos[current[0], current[1] + 1] or ignore_other_player):
-                    queue.append((current[0], current[1] + 1))
-                    visited.append((current[0], current[1] + 1))
+                    queue.append([current[0], current[1] + 1])
+                    visited.append([current[0], current[1] + 1])
 
         return visited
 
@@ -244,20 +250,18 @@ class ChessBoard:
         return True
 
     @staticmethod
-    def array_to_coordinates(array: np.ndarray) -> List[Tuple[int, int]]:
+    def array_to_coordinates(array: np.ndarray) -> np.ndarray:
         """
         找出2D数组中所有为1的位置
         :param array: 2维数组
-        :return: 1的位置列表，注意即使只有一个1，也是列表
+        :return: 1的位置二维数组，注意即使只有一个1，也是数组
         """
-        coordinates = []
-        for i in range(array.shape[0]):
-            for j in range(array.shape[1]):
-                if array[i][j] == 1:
-                    coordinates.append((i, j))
-        return coordinates
+        array = array.copy()
 
-    def coordinates_to_array(self, coordinates: list, shape: tuple = (7, 7)) -> np.ndarray:
+        return np.stack(np.where(array == 1)).T.tolist()
+
+    @staticmethod
+    def coordinates_to_array(coordinates: list, shape: tuple = (7, 7)) -> np.ndarray:
         """
         根据坐标列表生成2D数组
         :param coordinates: 坐标列表
@@ -268,3 +272,26 @@ class ChessBoard:
         for coordinate in coordinates:
             array[coordinate[0]][coordinate[1]] = 1
         return array
+
+
+if __name__ == '__main__':
+    timer = time.time()
+    steps = []
+    wins = []
+    n = 100
+
+    for i in range(n):
+        board = ChessBoard()
+        while True:
+            if board.is_game_over()[0]:
+                break
+            action = random.choice(board.get_available_actions())
+            board.do_action(action)
+        steps.append(board.step_count)
+        wins.append(board.is_game_over()[1])
+
+    print("avg time", (time.time() - timer) / n)
+    print("avg step", np.mean(steps))
+    print("X wins", wins.count(1))
+    print("O wins", wins.count(0))
+    print("draws", wins.count(None))
