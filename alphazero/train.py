@@ -235,7 +235,9 @@ class TrainModel:
                 self.train_losses.append([i, loss.item()])
 
                 print(f'⏱️ 耗时 {time.time() - train_timer:.1f} 秒')
-                print(f"🚩 train_loss = {loss.item():<10.5f}\n")
+                print(f"🚩 train_loss = {loss.item():<10.5f}")
+
+            print()
 
             # 测试模型
             if (i + 1) % self.check_frequency == 0:
