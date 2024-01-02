@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # load data
-path = "../log/hist/train_losses.json"
+path = "../log/train_losses.json"
 with open(path, 'r') as f:
     losses = json.load(f)
 

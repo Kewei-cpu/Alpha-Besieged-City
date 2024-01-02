@@ -14,11 +14,11 @@ action_to_pos = {
     24: (3, 0)
 }
 # load data
-path = "../log/hist/games.json"
+path = "../log/games.json"
 with open(path, 'r') as f:
     games = json.load(f)
 
-last_game = games[123]
+last_game = games[500]
 
 board = ChessBoard()
 

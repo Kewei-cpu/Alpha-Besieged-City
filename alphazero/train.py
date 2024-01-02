@@ -7,7 +7,7 @@ import traceback
 import torch
 import torch.nn.functional as F
 from torch import nn, optim, cuda
-from torch.optim.lr_scheduler import MultiStepLR
+from torch.optim.lr_scheduler import ExponentialLR
 from torch.utils.data import DataLoader
 
 from .alpha_zero_mcts import AlphaZeroMCTS
@@ -66,7 +66,7 @@ class TrainModel:
 
     def __init__(self, board_len=7, lr=1e-4, n_self_plays=10, n_mcts_iters=500,
                  n_feature_planes=13, policy_output_dim=100, batch_size=500, start_train_size=500, check_frequency=100,
-                 n_test_games=10, c_puct=4, is_use_gpu=True, is_save_game=False, **kwargs):
+                 n_test_games=10, c_puct=4, gamma=0.8, is_use_gpu=True, is_save_game=False, **kwargs):
         """
         Parameters
         ----------
@@ -110,6 +110,7 @@ class TrainModel:
         self.is_use_gpu = is_use_gpu
         self.policy_output_dim = policy_output_dim
         self.batch_size = batch_size
+        self.gamma = gamma
         self.n_self_plays = n_self_plays
         self.n_test_games = n_test_games
         self.n_mcts_iters = n_mcts_iters
@@ -127,7 +128,8 @@ class TrainModel:
         # 创建优化器和损失函数
         self.optimizer = optim.Adam(self.policy_value_net.parameters(), lr=lr, weight_decay=1e-4)
         self.criterion = PolicyValueLoss()
-        self.lr_scheduler = MultiStepLR(self.optimizer, [1500, 2500], gamma=0.1)
+        # self.lr_scheduler = MultiStepLR(self.optimizer, [1500, 2500], gamma=0.1)
+        self.lr_scheduler = ExponentialLR(self.optimizer, gamma=0.998)  # 0.998 ** 1000 = 0.135
 
         # 创建数据集
         self.dataset = SelfPlayDataSet(board_len)
@@ -168,7 +170,15 @@ class TrainModel:
             is_over, winner = self.chess_board.is_game_over()
             if is_over:
                 if winner is not None:
-                    z_list = [1 if i == winner else -1 for i in players]
+                    z_list = []
+
+                    # 最后一步价值为1，每向前一步价值乘以gamma
+                    for i in range(len(players)):
+                        if players[i] == winner:
+                            z_list.append(self.gamma ** (players[i:].count(winner) - 1))
+                        else:
+                            z_list.append(-self.gamma ** (players[i:].count(1 - winner) - 1))
+
                 else:
                     z_list = [0] * len(players)
                 break
@@ -187,14 +197,19 @@ class TrainModel:
     def train(self):
         """ 训练模型 """
         for i in range(self.n_self_plays):
-            print(f'🏹 正在进行第 {i + 1} 局自我博弈游戏...')
+            print(f'🏹 正在进行第 {i + 1} 局自我博弈游戏...', end=' ')
+
+            game_timer = time.time()
             self.dataset.append(self.__self_play())
+            print(f'⏱️ 耗时 {time.time() - game_timer:.1f} 秒')
 
             # 如果数据集中的数据量大于 start_train_size 就进行一次训练
             if len(self.dataset) >= self.start_train_size:
                 data_loader = iter(DataLoader(self.dataset, self.batch_size, shuffle=True, drop_last=False))
 
-                print('💊 开始训练...')
+                print('💊 开始训练...', end=' ')
+
+                train_timer = time.time()
 
                 self.policy_value_net.train()
 
@@ -218,6 +233,8 @@ class TrainModel:
 
                 # 记录误差
                 self.train_losses.append([i, loss.item()])
+
+                print(f'⏱️ 耗时 {time.time() - train_timer:.1f} 秒')
                 print(f"🚩 train_loss = {loss.item():<10.5f}\n")
 
             # 测试模型
