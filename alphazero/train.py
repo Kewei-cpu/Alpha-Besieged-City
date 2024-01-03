@@ -245,9 +245,9 @@ class TrainModel:
 
     def __test_model(self):
         """ 测试模型 """
-        os.makedirs('../model', exist_ok=True)
+        os.makedirs('./model', exist_ok=True)
 
-        model_path = '../model/best_policy_value_net.pth'
+        model_path = './model/best_policy_value_net.pth'
 
         # 如果最佳模型不存在保存当前模型为最佳模型
         if not os.path.exists(model_path):
@@ -329,7 +329,7 @@ class TrainModel:
 
     def __get_policy_value_net(self, board_len=9):
         """ 创建策略-价值网络，如果存在历史最优模型则直接载入最优模型 """
-        os.makedirs('../model', exist_ok=True)
+        os.makedirs('./model', exist_ok=True)
 
         best_model = 'best_policy_value_net.pth'
         history_models = sorted([i for i in os.listdir('./model') if i.startswith('last')])

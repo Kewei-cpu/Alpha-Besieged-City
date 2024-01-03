@@ -3,6 +3,7 @@ import json
 import pygame
 
 from alphazero import ChessBoard
+from copy import deepcopy
 
 action_to_pos = {
     0: (-3, 0),
@@ -18,7 +19,9 @@ path = "../log/games.json"
 with open(path, 'r') as f:
     games = json.load(f)
 
-last_game = games[500]
+game_index = 1300
+
+game = games[game_index].copy()
 
 board = ChessBoard()
 
@@ -27,14 +30,28 @@ pygame.init()
 screen = pygame.display.set_mode((800, 800))
 pygame.display.set_caption("Chess")
 
+move_count = 0
+
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             exit()
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-            if len(last_game) > 0:
-                action = last_game.pop(0)
-                board.do_action(action)
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE:
+                if len(game) > 0:
+                    action = game.pop(0)
+                    board.do_action(action)
+                    move_count += 1
+            elif event.key == pygame.K_LEFT:
+                game_index -= 1
+                game = games[game_index].copy()
+                board = ChessBoard()
+                move_count = 0
+            elif event.key == pygame.K_RIGHT:
+                game_index += 1
+                game = games[game_index].copy()
+                board = ChessBoard()
+                move_count = 0
 
     screen.fill((255, 255, 255))
 
@@ -65,6 +82,23 @@ while True:
                 pygame.draw.rect(screen, (0, 0, 0), (100 + i * width, 100 + j * width + width, width, 10))
             if vertical_wall[j, i] == 1:
                 pygame.draw.rect(screen, (0, 0, 0), (100 + i * width + width, 100 + j * width, 10, width))
+
+    # show game index
+    font = pygame.font.SysFont("Microsoft YaHei", 30)
+    text = font.render(f"Game {game_index}   Move {move_count}", True, (0, 0, 0))
+    text_rect = text.get_rect()
+    text_rect.centerx = 400
+    text_rect.centery = 50
+    screen.blit(text, text_rect)
+
+    if board.is_game_over()[0]:
+        winner = "Blue" if board.is_game_over()[1] == 0 else "Red"
+        text = font.render(f"Game Over  {winner} Wins", True, (0, 0, 0))
+        text_rect = text.get_rect()
+        text_rect.centerx = 400
+        text_rect.centery = 750
+        screen.blit(text, text_rect)
+
 
     # if board.is_game_over()[0]:
     #     break
