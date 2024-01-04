@@ -19,7 +19,7 @@ path = "../log/games.json"
 with open(path, 'r') as f:
     games = json.load(f)
 
-game_index = 1300
+game_index = 0
 
 game = games[game_index].copy()
 
