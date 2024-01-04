@@ -2,3 +2,4 @@ numpy
 PyQt5
 PyQt5-sip
 pywin32
+pygame
