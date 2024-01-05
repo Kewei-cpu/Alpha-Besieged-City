@@ -1,5 +1,5 @@
 <p align="center">
-  <img width="25%" align="center" src="resources/icon/xo.png" alt="logo">
+  <img width="25%" align="center" src="resources/icon/bluegreen.png" alt="logo">
 </p>
   <h1 align="center">
   Alpha Besieged City

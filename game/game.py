@@ -470,7 +470,7 @@ class Game:
         :return: 屏幕对象
         """
         screen = pygame.display.set_mode((self.window_size, self.window_size))
-        ico = pygame.image.load('../resources/icon/xo.ico')
+        ico = pygame.image.load('../resources/icon/bluegreen.png')
         pygame.display.set_icon(ico)
         pygame.display.set_caption('围城')
         return screen
