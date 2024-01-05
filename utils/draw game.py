@@ -3,7 +3,6 @@ import json
 import pygame
 
 from alphazero import ChessBoard
-from copy import deepcopy
 
 action_to_pos = {
     0: (-3, 0),
@@ -15,11 +14,11 @@ action_to_pos = {
     24: (3, 0)
 }
 # load data
-path = "../log/games.json"
+path = "../log/2024-1-4-history/games.json"
 with open(path, 'r') as f:
     games = json.load(f)
 
-game_index = 0
+game_index = 1300
 
 game = games[game_index].copy()
 
@@ -98,7 +97,6 @@ while True:
         text_rect.centerx = 400
         text_rect.centery = 750
         screen.blit(text, text_rect)
-
 
     # if board.is_game_over()[0]:
     #     break

@@ -1,11 +1,10 @@
 # coding: utf-8
-import random
-import time
 from copy import deepcopy
-from typing import Tuple, List
+from typing import Tuple, List, Any
 
 import numpy as np
 import torch
+from numpy import ndarray
 
 
 class ChessBoard:
@@ -154,7 +153,27 @@ class ChessBoard:
             return True, 0 if len(x_territory) > len(o_territory) else 1 if len(x_territory) < len(
                 o_territory) else None
 
-        return False, None
+        return False, -1
+
+    def is_game_over_(self) -> tuple[bool, list[list[int, int]], list[list[int, int]]] | tuple[bool, None, None]:
+        """
+        判断游戏是否结束
+        :return: （是否结束， X玩家可到达的位置， O玩家可到达的位置）
+        """
+
+        if self.array_to_coordinates(self.state[3])[0] not in \
+                self.reachable_positions(self.state[0], self.state[3],
+                                         self.state[6], self.state[9],
+                                         ignore_other_player=True, step=self.board_len ** 2):
+            x_territory = self.reachable_positions(self.state[0], self.state[3],
+                                                   self.state[6], self.state[9],
+                                                   ignore_other_player=True, step=self.board_len ** 2)
+            o_territory = self.reachable_positions(self.state[3], self.state[0],
+                                                   self.state[6], self.state[9],
+                                                   ignore_other_player=True, step=self.board_len ** 2)
+            return True, x_territory, o_territory
+
+        return False, None, None
 
     def get_feature_planes(self) -> torch.Tensor:
         """
@@ -189,7 +208,7 @@ class ChessBoard:
         return available_move
 
     def reachable_positions(self, pos, other_player_pos, horizontal_wall, vertical_wall, step=3,
-                            ignore_other_player=False) -> list[list[int, int]]:
+                            ignore_other_player=False) -> list[int | Any]:
         """
         可到达的位置，采用BFS遍历
         :param pos: 起始位置， one-hot编码
@@ -233,6 +252,54 @@ class ChessBoard:
 
         return visited
 
+    def distance(self, pos, other_player_pos, horizontal_wall, vertical_wall) -> ndarray:
+        """
+        可到达的位置，采用BFS遍历
+        :param pos: 起始位置， one-hot编码
+        :param other_player_pos: 对方位置， one-hot编码
+        :param horizontal_wall: 横向墙， one-hot编码
+        :param vertical_wall: 纵向墙， one-hot编码
+        :return: 可到达的位置列表
+        """
+
+        pos = self.array_to_coordinates(pos)[0]
+
+        step = self.board_len ** 2
+
+        territory = np.ones((self.board_len, self.board_len)) * -1
+
+        queue = [pos]
+        visited = [pos]
+        for i in range(step):
+            if len(queue) == 0:
+                break
+            for j in range(len(queue)):
+                current = queue.pop(0)
+                territory[tuple(current)] = i
+
+                if current[0] - 1 >= 0 and horizontal_wall[current[0] - 1][current[1]] == 0 and [
+                    current[0] - 1, current[1]] not in visited and (
+                        not other_player_pos[current[0] - 1, current[1]]):
+                    queue.append([current[0] - 1, current[1]])
+                    visited.append([current[0] - 1, current[1]])
+                if current[1] - 1 >= 0 and vertical_wall[current[0]][current[1] - 1] == 0 and [
+                    current[0], current[1] - 1] not in visited and (
+                        not other_player_pos[current[0], current[1] - 1]):
+                    queue.append([current[0], current[1] - 1])
+                    visited.append([current[0], current[1] - 1])
+                if current[0] + 1 < self.board_len and horizontal_wall[current[0]][current[1]] == 0 and [
+                    current[0] + 1, current[1]] not in visited and (
+                        not other_player_pos[current[0] + 1, current[1]]):
+                    queue.append([current[0] + 1, current[1]])
+                    visited.append([current[0] + 1, current[1]])
+                if current[1] + 1 < self.board_len and vertical_wall[current[0]][current[1]] == 0 and [
+                    current[0], current[1] + 1] not in visited and (
+                        not other_player_pos[current[0], current[1] + 1]):
+                    queue.append([current[0], current[1] + 1])
+                    visited.append([current[0], current[1] + 1])
+
+        return territory
+
     def placeable(self, pos, place, horizontal_wall, vertical_wall) -> bool:
         """
         当前位置，当前放置方式是否可行
@@ -268,38 +335,13 @@ class ChessBoard:
 
         return np.stack(np.where(array == 1)).T.tolist()
 
-    @staticmethod
-    def coordinates_to_array(coordinates: list, shape: tuple = (7, 7)) -> np.ndarray:
+    def coordinates_to_array(self, coordinates: list) -> np.ndarray:
         """
         根据坐标列表生成2D数组
         :param coordinates: 坐标列表
-        :param shape: 2D数组形状
         :return: 2D数组，只有坐标列表中的位置为1，其余为0
         """
-        array = np.zeros(shape=shape)
+        array = np.zeros(shape=(self.board_len, self.board_len))
         for coordinate in coordinates:
             array[coordinate[0]][coordinate[1]] = 1
         return array
-
-
-if __name__ == '__main__':
-    timer = time.time()
-    steps = []
-    wins = []
-    n = 100
-
-    for i in range(n):
-        board = ChessBoard()
-        while True:
-            if board.is_game_over()[0]:
-                break
-            action = random.choice(board.get_available_actions())
-            board.do_action(action)
-        steps.append(board.step_count)
-        wins.append(board.is_game_over()[1])
-
-    print("avg time", (time.time() - timer) / n)
-    print("avg step", np.mean(steps))
-    print("X wins", wins.count(1))
-    print("O wins", wins.count(0))
-    print("draws", wins.count(None))
