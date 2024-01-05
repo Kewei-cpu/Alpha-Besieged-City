@@ -23,7 +23,7 @@
   </a>
 
   <a style="text-decoration:none">
-    <img src="https://img.shields.io/badge/PyQt-5.15.10-blue?color=00B16A" alt="PyQt 5.15.10"/>
+    <img src="https://img.shields.io/badge/Pygame-2.5.2-blue?color=00B16A" alt="Pygame 2.5.2"/>
   </a>
 
   <a style="text-decoration:none">
