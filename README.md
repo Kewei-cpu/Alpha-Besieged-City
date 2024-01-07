@@ -61,12 +61,14 @@
 
 ### Move and Place
 
-* Two player go in turn. Each turn, a player  **move** his/her pieces, **_AND_** **place** a new wall on the
+* **Player Blue** goes first, then two player go in turn. Each turn, a player  **move** his/her pieces, **_AND_** *
+  *place** a new wall on the
   board.
 * A **step** of move is defined as moving a piece to a neighboring grid (up, down, left, right) that is not occupied by
   another piece or blocked by a wall.
 * A legal move can go **0~3** steps, which means the player can stay at the same grid.
-* After move, the player **_MUST_** place a wall on the board. The wall can only be placed on one of the **_four sides_**
+* After move, the player **_MUST_** place a wall on the board. The wall can only be placed on one of the **_four sides_
+  **
   of the grid that the player move to. Walls cannot be placed on another wall or on the outer edge of the board.
 
 ### Win or Lose
@@ -79,15 +81,21 @@
 
 ## Screenshots
 
+### Starting position
+
+<img width="80%" align="center" src="resources/screenshot/0.png">
+
 ### Middle of a game
 
 <img width="80%" align="center" src="resources/screenshot/1.png">
--
-  <img width="80%" align="center" src="resources/screenshot/2.png">
+<p></p>
+<img width="80%" align="center" src="resources/screenshot/2.png">
 
 ### Game over
 
-  <img width="80%" align="center" src="resources/screenshot/3.png">
+<img width="80%" align="center" src="resources/screenshot/3.png">
+
+In this case, **Player Blue** wins. (28:21)
 
 ## Train model
 
