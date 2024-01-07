@@ -87,13 +87,13 @@
 
 ### Middle of a game
 
-<img width="80%" align="center" src="resources/screenshot/1.png">
+<img width="50%" align="center" src="resources/screenshot/1.png">
 <p></p>
-<img width="80%" align="center" src="resources/screenshot/2.png">
+<img width="50%" align="center" src="resources/screenshot/2.png">
 
 ### Game over
 
-<img width="80%" align="center" src="resources/screenshot/3.png">
+<img width="50%" align="center" src="resources/screenshot/3.png">
 
 In this case, **Player Blue** wins. (28:21)
 
