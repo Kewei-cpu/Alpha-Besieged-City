@@ -82,7 +82,7 @@
 ### Middle of a game
 
 <img width="80%" align="center" src="resources/screenshot/1.png">
----
+-
   <img width="80%" align="center" src="resources/screenshot/2.png">
 
 ### Game over
