@@ -83,7 +83,7 @@
 
 ### Starting position
 
-<img width="80%" align="center" src="resources/screenshot/0.png">
+<img width="50%" align="center" src="resources/screenshot/0.png">
 
 ### Middle of a game
 
