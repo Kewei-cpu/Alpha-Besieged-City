@@ -38,7 +38,6 @@
     * `ResidueBlock` × 4
     * `PolicyHead` × 1
     * `ValueHead` × 1
-* Network visualization
 
 ## Quick start
 
@@ -56,14 +55,14 @@
 3. Start game:
 
     ```shell
-    conda activate Alpha_Gobang_Zero
+    conda activate Alpha_Besieged_City 
     python game.py
     ```
 
 ## Train model
 
   ```shell
-  conda activate Alpha_Gobang_Zero
+  conda activate Alpha_Besieged_City 
   python train.py
   ```
 
@@ -71,4 +70,4 @@
 
 Alpha-Besieged-City is licensed under [GPLv3](./LICENSE).
 
-Copyright © 2021 by zhiyiYo.
+Copyright © 2024 by Kewei-cpu
