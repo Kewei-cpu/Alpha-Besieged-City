@@ -11,6 +11,8 @@
     <option name="namespacePackageFolders">
       <list>
         <option value="$MODULE_DIR$/test" />
+        <option value="$MODULE_DIR$/utils" />
+        <option value="$MODULE_DIR$/arena" />
       </list>
     </option>
   </component>

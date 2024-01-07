@@ -1,5 +1,5 @@
-numpy
-PyQt5
-PyQt5-sip
-pywin32
-pygame
+numpy~=1.26.2
+pygame~=2.5.2
+torch~=2.1.2+cu121
+tqdm~=4.66.1
+matplotlib~=3.8.2

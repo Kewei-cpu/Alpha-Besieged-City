@@ -1,6 +1,8 @@
 import math
+import random
 import sys
 
+import numpy as np
 import pygame
 from pygame.locals import *
 
@@ -365,7 +367,7 @@ class Game:
     def max_territory_strategy(self):
         """
         最大领地策略
-        :return: 动作分数列表（与available_actions一一对应）
+        :return: 动作概率列表（与available_actions一一对应）
         """
         all_scores = []
 
@@ -376,10 +378,10 @@ class Game:
             if board.is_game_over()[0]:
                 if board.is_game_over()[1] == self.board.state[12, 0, 0]:
                     # 一步杀
-                    score = 100
+                    score = 1
                 elif board.is_game_over()[1] == 1 - self.board.state[12, 0, 0]:
                     # 一步死
-                    score = -100
+                    score = -1
                 else:
                     # 一步平
                     score = 0
@@ -393,7 +395,8 @@ class Game:
                                                                board.state[self.active_player_pos_index],
                                                                board.state[6],
                                                                board.state[9])
-                terr = 0
+                active_player_terr = 0
+                inactive_player_terr = 0
                 all_terr = self.grid_num ** 2  # 所有格子数
 
                 for i in range(self.grid_num):
@@ -402,7 +405,7 @@ class Game:
                             # 对方无法到达的位置
                             if active_player_distance[i, j] >= 0:
                                 # 自己可以到达
-                                terr += 1
+                                active_player_terr += 1
                             else:
                                 # 自己也无法到达，所有格子数减一
                                 all_terr -= 1
@@ -410,12 +413,27 @@ class Game:
                             # 对方可以到达的位置
                             if active_player_distance[i, j] >= 0:
                                 # 自己可以到达
-                                terr += self.terr_function(
+                                active_player_terr += self.terr_function(
                                     active_player_distance[i, j] - inactive_player_distance[i, j])
-                score = terr / all_terr * 100
+
+                                inactive_player_terr += self.terr_function(
+                                    inactive_player_distance[i, j] - active_player_distance[i, j])
+
+                            else:
+                                inactive_player_terr += 1
+                score = active_player_terr / all_terr
+                # score = (active_player_terr - inactive_player_terr) / all_terr
 
             all_scores.append(score)
-        return all_scores
+
+        # # 使用softmax函数将分数转化为概率
+        # all_scores = np.array(all_scores)
+        # all_possibility = np.power(1e8, all_scores) / np.sum(np.power(1e8, all_scores))
+        # print(all_possibility)
+        #
+        # return np.random.choice(self.board.available_actions, p=all_possibility)
+
+        return random.choice([a for a, s in zip(self.board.available_actions, all_scores) if s == max(all_scores)])
 
     @staticmethod
     def terr_function(x):
@@ -470,7 +488,7 @@ class Game:
         :return: 屏幕对象
         """
         screen = pygame.display.set_mode((self.window_size, self.window_size))
-        ico = pygame.image.load('../resources/icon/bluegreen.png')
+        ico = pygame.image.load('./resources/icon/bluegreen.png')
         pygame.display.set_icon(ico)
         pygame.display.set_caption('围城')
         return screen
@@ -493,10 +511,8 @@ class Game:
         :return:
         """
         if self.running and self.board.state[12, 0, 0] in self.robot:
-            action_list = sorted(list(zip(self.board.available_actions, self.max_territory_strategy())),
-                                 key=lambda x: x[1],
-                                 reverse=True)
-            self.do_action(action_list[0][0])
+            action = self.max_territory_strategy()
+            self.do_action(action)
 
     def event_handler(self):
         """
