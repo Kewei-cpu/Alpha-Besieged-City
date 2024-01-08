@@ -11,8 +11,8 @@ if __name__ == '__main__':
     wins = []
     n = 100
     timer = time.time()
+    board = ChessBoard()
     for i in range(n):
-        board = ChessBoard()
         while True:
             if board.is_game_over()[0]:
                 break
@@ -20,6 +20,7 @@ if __name__ == '__main__':
             board.do_action(action)
         steps.append(board.step_count)
         wins.append(board.is_game_over()[1])
+        board.clear_board()
 
     print("avg time", (time.time() - timer) / n)
     print("avg step", np.mean(steps))
