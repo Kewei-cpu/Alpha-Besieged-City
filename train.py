@@ -2,11 +2,11 @@
 from alphazero.train import TrainModel
 
 train_config = {
-    'lr': 0.005,
+    'lr': 1e-3,
     'c_puct': 3,
     'gamma': 0.8,
     'board_len': 7,
-    'batch_size': 200,  # 500 previously
+    'batch_size': 500,  # 500 previously
     'is_use_gpu': True,
     'n_test_games': 10,
     'n_mcts_iters': 500,

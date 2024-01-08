@@ -1,5 +1,6 @@
 import itertools
 import random
+import matplotlib.pyplot as plt
 
 from tqdm import tqdm
 
@@ -32,22 +33,31 @@ class Arena:
             game = Game(self.board, player_blue, player_green)
 
             blue_score, green_score = game.run()
+            blue_elo = player_blue.elo
+            green_elo = player_green.elo
+
 
             if blue_score > green_score:
-                player_blue.update_elo(1, player_green.elo)
-                player_green.update_elo(0, player_blue.elo)
+                player_blue.update_elo(1, green_elo)
+                player_green.update_elo(0, blue_elo)
 
             elif blue_score < green_score:
-                player_blue.update_elo(0, player_green.elo)
-                player_green.update_elo(1, player_blue.elo)
+                player_blue.update_elo(0, green_elo)
+                player_green.update_elo(1, blue_elo)
 
             else:
-                player_blue.update_elo(0.5, player_green.elo)
-                player_green.update_elo(0.5, player_blue.elo)
+                player_blue.update_elo(0.5, green_elo)
+                player_green.update_elo(0.5, blue_elo)
 
         print("==========ELO==========")
         for robot in self.robots:
             print(f"{robot}: {robot.elo:.1f}")
+            plt.plot(robot.elos, label=robot.name)
+        plt.legend()
+        plt.xlabel("Game")
+        plt.ylabel("ELO")
+        plt.show()
+
 
 
 class Game:
@@ -76,8 +86,12 @@ class Game:
 
 
 if __name__ == '__main__':
-    r = [MaxTerritory, Random, Quickest]
-    p = [{"name": "Max1"},  {"name": "Random1"}, {"name": "Quickest1"},]
+    r = [MaxTerritory,] * 3
+    p = [
+        {"name": "Max 2x+2", "K": 2, "B": 2},
+        {"name": "Max 2x+1", "K": 2, "B": 1},
+        {"name": "Max 3x+1", "K": 3, "B": 1},
+    ]
     # r = [MaxTerritory, MaxTerritory, Random, Random, Quickest, Quickest]
     # p = [{"name": "Max1"}, {"name": "Max2"}, {"name": "Random1"}, {"name": "Random2"}, {"name": "Quickest1"},
     #      {"name": "Quickest2"}]

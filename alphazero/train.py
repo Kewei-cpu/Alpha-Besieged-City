@@ -15,6 +15,8 @@ from .chess_board import ChessBoard
 from .policy_value_net import PolicyValueNet
 from .self_play_dataset import SelfPlayData, SelfPlayDataSet
 
+from torchsummary import summary
+
 
 def exception_handler(train_func):
     """ 异常处理装饰器 """
@@ -122,6 +124,8 @@ class TrainModel:
 
         # 创建策略-价值网络和蒙特卡洛搜索树
         self.policy_value_net = self.__get_policy_value_net(board_len)
+        summary(self.policy_value_net)
+
         self.mcts = AlphaZeroMCTS(self.policy_value_net, c_puct=c_puct, n_iters=n_mcts_iters,
                                   policy_dim=policy_output_dim, is_self_play=True)
 

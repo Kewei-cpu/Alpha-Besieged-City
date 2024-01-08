@@ -6,17 +6,17 @@ import numpy as np
 from alphazero import ChessBoard
 
 if __name__ == '__main__':
-    timer = time.time()
+
     steps = []
     wins = []
     n = 100
-
+    timer = time.time()
     for i in range(n):
         board = ChessBoard()
         while True:
             if board.is_game_over()[0]:
                 break
-            action = random.choice(board.get_available_actions())
+            action = random.choice(board.available_actions)
             board.do_action(action)
         steps.append(board.step_count)
         wins.append(board.is_game_over()[1])

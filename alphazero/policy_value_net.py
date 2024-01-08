@@ -119,10 +119,10 @@ class PolicyValueNet(nn.Module):
         self.is_use_gpu = is_use_gpu
         self.n_feature_planes = n_feature_planes
         self.device = torch.device('cuda:0' if is_use_gpu else 'cpu')
-        self.conv = ConvBlock(n_feature_planes, 128, 3, padding=1)
-        self.residues = nn.Sequential(*[ResidueBlock(128, 128) for i in range(4)])
-        self.policy_head = PolicyHead(128, board_len, policy_output_dim)
-        self.value_head = ValueHead(128, board_len)
+        self.conv = ConvBlock(n_feature_planes, 32, 3, padding=1)
+        self.residues = nn.Sequential(*[ResidueBlock(32, 32) for i in range(4)])
+        self.policy_head = PolicyHead(32, board_len, policy_output_dim)
+        self.value_head = ValueHead(32, board_len)
 
     def forward(self, x):
         """ 前馈，输出 `p_hat` 和 `V`

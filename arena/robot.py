@@ -10,6 +10,9 @@ class Robot:
         self.elo = 1000
         self.name = name
 
+        self.results = []
+        self.elos = []
+
     def __str__(self):
         return self.name
 
@@ -28,6 +31,9 @@ class Robot:
         """
         k = 32
         self.elo += k * (result - 1 / (1 + 10 ** ((opponent_elo - self.elo) / 400)))
+
+        self.results.append(result)
+        self.elos.append(self.elo)
 
 
 class Random(Robot):
@@ -53,13 +59,14 @@ class Quickest(Robot):
 
 
 class MaxTerritory(Robot):
-    def __init__(self, board: ChessBoard, name=""):
+    def __init__(self, board: ChessBoard, name="", K=2, B=2):
         super().__init__(board, name)
         if not self.name:
             self.name = "Max Territory Bot"
+        self.K = K
+        self.B = B
 
-    @staticmethod
-    def terr_function(my_distance, enemy_distance):
+    def terr_function(self, my_distance, enemy_distance):
         """
         距离 -> 领地计算函数
         :param my_distance: 我方到某一格的距离
@@ -72,7 +79,7 @@ class MaxTerritory(Robot):
         if enemy_distance == -1:
             return 1
 
-        return 1 / (1 + math.e ** (2 * (my_distance - enemy_distance) + 2))
+        return 1 / (1 + math.e ** (self.K * (my_distance - enemy_distance) + self.B))
 
     def get_action_scores(self):
         active_player_pos_index = 0 if self.board.state[12, 0, 0] == 0 else 3
@@ -82,7 +89,7 @@ class MaxTerritory(Robot):
 
         for action in self.board.available_actions:
             board = self.board.copy()
-            board.do_action(action)
+            board.do_action(action, update_available_actions=False)
             score = 0
 
             if board.is_game_over()[0]:

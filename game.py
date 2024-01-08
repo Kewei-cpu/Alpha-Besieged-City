@@ -108,8 +108,8 @@ class Game:
         :param scr:屏幕
         :return:
         """
-        player_X_pos = self.board.array_to_coordinates(self.board.state[0])[0]
-        player_O_pos = self.board.array_to_coordinates(self.board.state[3])[0]
+        player_X_pos = self.board.array_to_only_coordinate(self.board.state[0])
+        player_O_pos = self.board.array_to_only_coordinate(self.board.state[3])
 
         pygame.draw.circle(
             surface=scr,
@@ -134,7 +134,7 @@ class Game:
         """
         pos_index = 0 if self.board.state[12, 0, 0] == 0 else 3
         color = self.BLUE if self.board.state[12, 0, 0] == 0 else self.GREEN
-        pos = self.board.array_to_coordinates(self.board.state[pos_index])[0]
+        pos = self.board.array_to_only_coordinate(self.board.state[pos_index])
 
         pygame.draw.circle(
             surface=scr,
@@ -151,8 +151,8 @@ class Game:
         :param scr: 屏幕
         :return:
         """
-        player_X_pos = self.board.array_to_coordinates(self.board.state[0])[0]
-        player_O_pos = self.board.array_to_coordinates(self.board.state[3])[0]
+        player_X_pos = self.board.array_to_only_coordinate(self.board.state[0])
+        player_O_pos = self.board.array_to_only_coordinate(self.board.state[3])
 
         pygame.draw.circle(
             surface=scr,
@@ -183,8 +183,8 @@ class Game:
         move = self.board.action_to_pos[self.mouse_pos_to_action(pygame.mouse.get_pos()) // 4]
         wall = self.mouse_pos_to_action(pygame.mouse.get_pos()) % 4
 
-        destination = (self.board.array_to_coordinates(self.board.state[self.active_player_pos_index])[0][0] + move[0],
-                       self.board.array_to_coordinates(self.board.state[self.active_player_pos_index])[0][1] + move[1])
+        destination = (self.board.array_to_only_coordinate(self.board.state[self.active_player_pos_index])[0] + move[0],
+                       self.board.array_to_only_coordinate(self.board.state[self.active_player_pos_index])[1] + move[1])
 
         if wall == 0:
             self.draw_horizontal_wall(scr, self.active_player_color, destination[0] - 1, destination[1])
@@ -212,9 +212,9 @@ class Game:
         available_positions = []
         for action in self.board.available_actions:
             pos = (self.board.action_to_pos[action // 4][0] +
-                   self.board.array_to_coordinates(self.board.state[self.active_player_pos_index])[0][0],
+                   self.board.array_to_only_coordinate(self.board.state[self.active_player_pos_index])[0],
                    self.board.action_to_pos[action // 4][1] +
-                   self.board.array_to_coordinates(self.board.state[self.active_player_pos_index])[0][1]
+                   self.board.array_to_only_coordinate(self.board.state[self.active_player_pos_index])[1]
                    )
             if pos not in available_positions:
                 available_positions.append(pos)
@@ -345,7 +345,7 @@ class Game:
         x, y = mouse_pos
         grid = (y - self.border_size) // self.grid_size, (x - self.border_size) // self.grid_size
 
-        active_pos = self.board.array_to_coordinates(self.board.state[self.active_player_pos_index])[0]
+        active_pos = self.board.array_to_only_coordinate(self.board.state[self.active_player_pos_index])
 
         move = grid[0] - active_pos[0], grid[1] - active_pos[1]
 
