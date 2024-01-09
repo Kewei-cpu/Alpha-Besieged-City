@@ -277,12 +277,12 @@ class TrainModel:
                 # 当前模型走一步
                 is_over, winner = self.__do_mcts_action(self.mcts)
                 if is_over:
-                    n_wins += int(winner == self.chess_board.Player_X)
+                    n_wins += int(winner == self.chess_board.Player_Blue)
                     break
                 # 历史最优模型走一步
                 is_over, winner = self.__do_mcts_action(mcts)
                 if is_over:
-                    n_wins += int(winner == self.chess_board.Player_X)
+                    n_wins += int(winner == self.chess_board.Player_Blue)
                     break
 
         # 如果胜率大于 55%，就保存当前模型为最优模型

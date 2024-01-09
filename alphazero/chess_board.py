@@ -12,8 +12,8 @@ class ChessBoard:
     棋盘类，用于存储棋盘状态和落子，判断游戏是否结束等
     """
 
-    Player_X = 0
-    Player_O = 1
+    Player_Blue = 0
+    Player_Green = 1
 
     action_to_pos = {
         0: (-3, 0),
@@ -45,19 +45,19 @@ class ChessBoard:
         self.n_feature_planes = n_feature_planes
 
         self.state = np.zeros((self.n_feature_planes, self.board_len, self.board_len))
-        # index 0  X 位置
-        #       1  X 上一个位置
-        #       2  X 上上个位置
-        #       3  O 位置
-        #       4  O 上一个位置
-        #       5  O 上上个位置
+        # index 0  蓝色 位置
+        #       1  蓝色 上一个位置
+        #       2  蓝色 上上个位置
+        #       3  绿色 位置
+        #       4  绿色 上一个位置
+        #       5  绿色 上上个位置
         #       6  横向墙 位置
         #       7  横向墙 上一个位置
         #       8  横向墙 上上个位置
         #       9  纵向墙 位置
         #       10 纵向墙 上一个位置
         #       11 纵向墙 上上个位置
-        #       12 该谁走了 0 for X ; 1 for O
+        #       12 该谁走了 0 for 蓝色 ; 1 for 绿色
 
         self.state[0, 0, 0] = 1  # X 初始在左上角
         self.state[3, self.board_len - 1, self.board_len - 1] = 1  # O 初始在右下角
