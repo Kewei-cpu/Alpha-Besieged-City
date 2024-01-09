@@ -59,12 +59,10 @@ class Quickest(Robot):
 
 
 class MaxTerritory(Robot):
-    def __init__(self, board: ChessBoard, name="", K=2, B=2):
+    def __init__(self, board: ChessBoard, name=""):
         super().__init__(board, name)
         if not self.name:
             self.name = "Max Territory Bot"
-        self.K = K
-        self.B = B
 
     def terr_function(self, my_distance, enemy_distance):
         """
@@ -73,13 +71,14 @@ class MaxTerritory(Robot):
         :param enemy_distance: 敌方到某一格的距离
         :return: 领地函数值，0~1，1代表完全为自己领地
         """
+
         if my_distance == -1:
             return 0
 
         if enemy_distance == -1:
             return 1
 
-        return 1 / (1 + math.e ** (self.K * (my_distance - enemy_distance) + self.B))
+        return 1 if my_distance < enemy_distance else 0 if my_distance > enemy_distance else 0.5
 
     def get_action_scores(self):
         active_player_pos_index = 0 if self.board.state[12, 0, 0] == 0 else 3
@@ -126,3 +125,54 @@ class MaxTerritory(Robot):
         action = random.choice([a for a, s in zip(self.board.available_actions, all_scores) if s == max(all_scores)])
 
         return action
+
+
+class MaxSigmoidTerritory(MaxTerritory):
+    def __init__(self, board: ChessBoard, name="", K=2, B=2):
+        super().__init__(board, name)
+        if not name:
+            self.name = "Max Sigmoid Territory Bot"
+        self.K = K
+        self.B = B
+
+    def terr_function(self, my_distance, enemy_distance):
+        """
+        距离 -> 领地计算函数
+        :param my_distance: 我方到某一格的距离
+        :param enemy_distance: 敌方到某一格的距离
+        :return: 领地函数值，0~1，1代表完全为自己领地
+        """
+        if my_distance == -1:
+            return 0
+
+        if enemy_distance == -1:
+            return 1
+
+        return 1 / (1 + math.e ** (self.K * (my_distance - enemy_distance) + self.B))
+
+
+class MaxDictTerritory(MaxTerritory):
+    def __init__(self, board: ChessBoard, name="", D=None):
+        super().__init__(board, name)
+        if not name:
+            self.name = "Max Dict Territory Bot"
+        if D is None:
+            D = dict()
+        self.D = D
+
+    def terr_function(self, my_distance, enemy_distance):
+        """
+        距离 -> 领地计算函数
+        :param my_distance: 我方到某一格的距离
+        :param enemy_distance: 敌方到某一格的距离
+        :return: 领地函数值，0~1，1代表完全为自己领地
+        """
+        if my_distance == -1:
+            return 0
+
+        if enemy_distance == -1:
+            return 1
+
+        if my_distance - enemy_distance in self.D.keys():
+            return self.D[my_distance - enemy_distance]
+        return 1 if my_distance < enemy_distance else 0 if my_distance > enemy_distance else 0.5

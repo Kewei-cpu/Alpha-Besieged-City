@@ -1,6 +1,5 @@
 import itertools
 import random
-import matplotlib.pyplot as plt
 
 from tqdm import tqdm
 
@@ -36,7 +35,6 @@ class Arena:
             blue_elo = player_blue.elo
             green_elo = player_green.elo
 
-
             if blue_score > green_score:
                 player_blue.update_elo(1, green_elo)
                 player_green.update_elo(0, blue_elo)
@@ -48,16 +46,6 @@ class Arena:
             else:
                 player_blue.update_elo(0.5, green_elo)
                 player_green.update_elo(0.5, blue_elo)
-
-        print("==========ELO==========")
-        for robot in self.robots:
-            print(f"{robot}: {robot.elo:.1f}")
-            plt.plot(robot.elos, label=robot.name)
-        plt.legend()
-        plt.xlabel("Game")
-        plt.ylabel("ELO")
-        plt.show()
-
 
 
 class Game:
@@ -84,18 +72,3 @@ class Game:
                 self.board.clear_board()
                 return blue_score, green_score
 
-
-if __name__ == '__main__':
-    r = [MaxTerritory,] * 3
-    p = [
-        {"name": "Max 2x+2", "K": 2, "B": 2},
-        {"name": "Max 2x+1", "K": 2, "B": 1},
-        {"name": "Max 3x+1", "K": 3, "B": 1},
-    ]
-    # r = [MaxTerritory, MaxTerritory, Random, Random, Quickest, Quickest]
-    # p = [{"name": "Max1"}, {"name": "Max2"}, {"name": "Random1"}, {"name": "Random2"}, {"name": "Quickest1"},
-    #      {"name": "Quickest2"}]
-    # r = [Random, Random, Random, Random, Random, Random]
-    # p = [{"name": "Random1"}, {"name": "Random2"}, {"name": "Random3"}, {"name": "Random4"}, {"name": "Random5"}, {"name": "Random6"}]
-    arena = Arena(ChessBoard(), robots=r, param_list=p, N=120)
-    arena.match()

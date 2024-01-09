@@ -547,5 +547,5 @@ class Game:
 
 
 if __name__ == '__main__':
-    game = Game(7, 100, 50, 24)
+    game = Game(7, 100, 50, 24, robot=(1,))
     game.main()
