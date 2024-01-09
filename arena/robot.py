@@ -114,13 +114,18 @@ class MaxTerritory(Robot):
 
                 for i in range(self.board.board_len):
                     for j in range(self.board.board_len):
-                        score += self.terr_function(active_player_distance[i, j], inactive_player_distance[i, j])
+                        score += self.terr_function(active_player_distance[i, j],
+                                                    inactive_player_distance[i, j]) / self.board.board_len ** 2
 
             all_scores.append(score)
 
         return all_scores
 
     def play(self):
+        if random.random() < 0.1:
+            # 10%的概率随机走，增加对局多样性
+            return random.choice(self.board.available_actions)
+
         all_scores = self.get_action_scores()
         action = random.choice([a for a, s in zip(self.board.available_actions, all_scores) if s == max(all_scores)])
 
@@ -176,3 +181,72 @@ class MaxDictTerritory(MaxTerritory):
         if my_distance - enemy_distance in self.D.keys():
             return self.D[my_distance - enemy_distance]
         return 1 if my_distance < enemy_distance else 0 if my_distance > enemy_distance else 0.5
+
+
+class MaxRelativeSigmoidTerritory(MaxSigmoidTerritory):
+    def __init__(self, board: ChessBoard, name="", K=2, B=2):
+        super().__init__(board, name, K, B)
+        if not name:
+            self.name = "Max Diff Sigmoid Territory Bot"
+
+    def get_action_scores(self):
+        all_scores = []
+
+        for action in self.board.available_actions:
+            board = self.board.copy()
+            board.do_action(action, update_available_actions=False)
+
+            if board.is_game_over()[0]:
+                if board.is_game_over()[1] == self.board.state[12, 0, 0]:
+                    # 一步杀
+                    score = 1
+                elif board.is_game_over()[1] == 1 - self.board.state[12, 0, 0]:
+                    # 一步死
+                    score = -1
+                else:
+                    # 一步平
+                    score = 0
+
+            else:
+                active_player = 0 if self.board.state[12, 0, 0] == 0 else 3
+
+                active_player_distance = self.board.distance(board.state[active_player],
+                                                             board.state[3 - active_player],
+                                                             board.state[6],
+                                                             board.state[9])
+                inactive_player_distance = self.board.distance(board.state[3 - active_player],
+                                                               board.state[active_player],
+                                                               board.state[6],
+                                                               board.state[9])
+                active_player_terr = 0
+                inactive_player_terr = 0
+                all_terr = self.board.board_len ** 2  # 所有格子数
+
+                for i in range(self.board.board_len):
+                    for j in range(self.board.board_len):
+                        if inactive_player_distance[i, j] == -1:
+                            # 对方无法到达的位置
+                            if active_player_distance[i, j] >= 0:
+                                # 自己可以到达
+                                active_player_terr += 1
+                            else:
+                                # 自己也无法到达，所有格子数减一
+                                all_terr -= 1
+                        else:
+                            # 对方可以到达的位置
+                            if active_player_distance[i, j] >= 0:
+                                # 自己可以到达
+                                active_player_terr += self.terr_function(
+                                    active_player_distance[i, j], inactive_player_distance[i, j])
+
+                                inactive_player_terr += self.terr_function(
+                                    inactive_player_distance[i, j], active_player_distance[i, j])
+
+                            else:
+                                inactive_player_terr += 1
+
+                score = active_player_terr / all_terr
+                # score = (active_player_terr - inactive_player_terr) / all_terr
+
+            all_scores.append(score)
+        return all_scores
