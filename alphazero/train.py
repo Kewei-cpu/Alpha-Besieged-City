@@ -3,6 +3,7 @@ import json
 import os
 import time
 import traceback
+import multiprocessing
 
 import torch
 import torch.nn.functional as F
@@ -16,7 +17,6 @@ from .policy_value_net import PolicyValueNet
 from .self_play_dataset import SelfPlayData, SelfPlayDataSet
 
 from torchsummary import summary
-
 
 def exception_handler(train_func):
     """ 异常处理装饰器 """
@@ -67,7 +67,7 @@ class TrainModel:
     """ 训练模型 """
 
     def __init__(self, board_len=7, lr=1e-4, n_self_plays=10, n_mcts_iters=500,
-                 n_feature_planes=13, policy_output_dim=100, batch_size=500, start_train_size=500, check_frequency=100,
+                 n_feature_planes=13, policy_output_dim=100, batch_size=500, start_train_size=500, max_process=4, check_frequency=100,
                  n_test_games=10, c_puct=4, gamma=0.8, is_use_gpu=True, is_save_game=False, **kwargs):
         """
         Parameters
@@ -119,12 +119,13 @@ class TrainModel:
         self.is_save_game = is_save_game
         self.check_frequency = check_frequency
         self.start_train_size = start_train_size
+        self.max_process =  max_process
         self.device = torch.device('cuda:0' if is_use_gpu and cuda.is_available() else 'cpu')
         self.chess_board = ChessBoard(board_len, n_feature_planes)
 
         # 创建策略-价值网络和蒙特卡洛搜索树
         self.policy_value_net = self.__get_policy_value_net(board_len)
-        summary(self.policy_value_net)
+        # summary(self.policy_value_net)
 
         self.mcts = AlphaZeroMCTS(self.policy_value_net, c_puct=c_puct, n_iters=n_mcts_iters,
                                   policy_dim=policy_output_dim, is_self_play=True)
@@ -196,18 +197,24 @@ class TrainModel:
 
         self_play_data = SelfPlayData(pi_list=pi_list, z_list=z_list, feature_planes_list=feature_planes_list)
         return self_play_data
+    
+    def play_once(self, num):
+        """进行单次自对弈并且加入数据集"""
+        game_timer = time.time()
+        result = self.__self_play()
+        print(f'⏱️ 第 {num + 1} 局耗时 {time.time() - game_timer:.1f} 秒')
+        return result
 
     @exception_handler
     def train(self):
         """ 训练模型 """
+        ctx = multiprocessing.get_context("spawn")
+        pool = ctx.Pool(processes=self.max_process)
         for i in range(self.n_self_plays):
-            print(f'🏹 正在进行第 {i + 1} 局自我博弈游戏...', end=' ')
-
-            game_timer = time.time()
-            self.dataset.append(self.__self_play())
-            print(f'⏱️ 耗时 {time.time() - game_timer:.1f} 秒')
-
-            # 如果数据集中的数据量大于 start_train_size 就进行一次训练
+            pool.apply(func=print, args=(f'🏹 正在进行第 {i*self.max_process+1} 至 {(i+1)*self.max_process} 局自我博弈游戏...', ' '))
+            results = pool.map(func=self.play_once, iterable=range(i*self.max_process, (i+1)*self.max_process))
+            for result in results:
+                self.dataset.append(result)
             if len(self.dataset) >= self.start_train_size:
                 data_loader = iter(DataLoader(self.dataset, self.batch_size, shuffle=True, drop_last=False))
 
@@ -240,12 +247,12 @@ class TrainModel:
 
                 print(f'⏱️ 耗时 {time.time() - train_timer:.1f} 秒')
                 print(f"🚩 train_loss = {loss.item():<10.5f}")
-
+                # 测试模型
+                if (i + 1) % self.check_frequency == 0:
+                    self.__test_model()
             print()
-
-            # 测试模型
-            if (i + 1) % self.check_frequency == 0:
-                self.__test_model()
+        pool.close()
+        pool.join()
 
     def __test_model(self):
         """ 测试模型 """
