@@ -1,6 +1,4 @@
 # coding: utf-8
-import random
-import time
 from copy import deepcopy
 from typing import Tuple, List, Any
 
@@ -66,11 +64,18 @@ class ChessBoard:
 
         self.step_count = 0
 
+        self.player_pos = self.get_player_pos()
+
         self.available_actions = self.get_available_actions()
 
     def copy(self) -> 'ChessBoard':
         """ 复制棋盘 """
         return deepcopy(self)
+
+    def get_player_pos(self) -> List[List[int]]:
+        """ 获取玩家位置 """
+        return [self.array_to_only_coordinate(self.state[0]),
+                self.array_to_only_coordinate(self.state[3])]
 
     def clear_board(self):
         """ 清空棋盘 """
@@ -80,6 +85,7 @@ class ChessBoard:
 
         self.step_count = 0
 
+        self.player_pos = self.get_player_pos()
         self.available_actions = self.get_available_actions()
 
     def do_action(self, action: int, update_available_actions=True):
@@ -110,27 +116,29 @@ class ChessBoard:
         move = action // 4
         wall = action % 4
 
-        active_player = 0 if self.state[12, 0, 0] == 0 else 3
+        active_player = int(self.state[12, 0, 0])
 
         # 更新当前位置
-        self.state[active_player] = self.coordinates_to_array(
-            [(self.action_to_pos[move][0] + self.array_to_only_coordinate(self.state[active_player])[0],
-              self.action_to_pos[move][1] + self.array_to_only_coordinate(self.state[active_player])[1])]
+        self.state[0 if active_player == 0 else 3] = self.coordinates_to_array(
+            [(self.action_to_pos[move][0] + self.player_pos[active_player][0],
+              self.action_to_pos[move][1] + self.player_pos[active_player][1])]
         )
+
+        self.player_pos = self.get_player_pos()
 
         # 放墙
         if wall == 0:
-            self.state[6, self.array_to_only_coordinate(self.state[active_player])[0] - 1,
-            self.array_to_only_coordinate(self.state[active_player])[1]] = 1
+            self.state[6, self.player_pos[active_player][0] - 1,
+            self.player_pos[active_player][1]] = 1
         elif wall == 1:
-            self.state[9, self.array_to_only_coordinate(self.state[active_player])[0],
-            self.array_to_only_coordinate(self.state[active_player])[1] - 1] = 1
+            self.state[9, self.player_pos[active_player][0],
+            self.player_pos[active_player][1] - 1] = 1
         elif wall == 2:
-            self.state[6, self.array_to_only_coordinate(self.state[active_player])[0],
-            self.array_to_only_coordinate(self.state[active_player])[1]] = 1
+            self.state[6, self.player_pos[active_player][0],
+            self.player_pos[active_player][1]] = 1
         elif wall == 3:
-            self.state[9, self.array_to_only_coordinate(self.state[active_player])[0],
-            self.array_to_only_coordinate(self.state[active_player])[1]] = 1
+            self.state[9, self.player_pos[active_player][0],
+            self.player_pos[active_player][1]] = 1
 
         # 更新谁该走、合法位置
         self.state[12] = np.ones((self.board_len, self.board_len)) - self.state[12]
@@ -145,10 +153,9 @@ class ChessBoard:
         :return: （是否结束， 胜利者） 胜利者为 0 代表 X 胜利， 1 代表 O 胜利， None 代表平局
         """
 
-        if self.array_to_only_coordinate(self.state[3]) not in \
-                self.reachable_positions(self.state[0], self.state[3],
-                                         self.state[6], self.state[9],
-                                         ignore_other_player=True, step=self.board_len ** 2):
+        if self.player_pos[1] not in self.reachable_positions(self.state[0], self.state[3],
+                                                              self.state[6], self.state[9],
+                                                              ignore_other_player=True, step=self.board_len ** 2):
             x_territory = self.reachable_positions(self.state[0], self.state[3],
                                                    self.state[6], self.state[9],
                                                    ignore_other_player=True, step=self.board_len ** 2)
@@ -166,10 +173,9 @@ class ChessBoard:
         :return: （是否结束， X玩家可到达的位置， O玩家可到达的位置）
         """
 
-        if self.array_to_only_coordinate(self.state[3]) not in \
-                self.reachable_positions(self.state[0], self.state[3],
-                                         self.state[6], self.state[9],
-                                         ignore_other_player=True, step=self.board_len ** 2):
+        if self.player_pos[1] not in self.reachable_positions(self.state[0], self.state[3],
+                                                              self.state[6], self.state[9],
+                                                              ignore_other_player=True, step=self.board_len ** 2):
             x_territory = self.reachable_positions(self.state[0], self.state[3],
                                                    self.state[6], self.state[9],
                                                    ignore_other_player=True, step=self.board_len ** 2)
@@ -204,8 +210,8 @@ class ChessBoard:
                                                        horizontal_wall, vertical_wall)
 
         for move in range(25):  # 移动位置， 详见self.action_to_pos
-            next_pos = [self.action_to_pos[move][0] + self.array_to_only_coordinate(active_player_pos)[0],
-                        self.action_to_pos[move][1] + self.array_to_only_coordinate(active_player_pos)[1]]
+            next_pos = [self.action_to_pos[move][0] + self.player_pos[int(self.state[12, 0, 0])][0],
+                        self.action_to_pos[move][1] + self.player_pos[int(self.state[12, 0, 0])][1]]
             for wall in range(4):  # 放墙位置， 0-上；1-左；2-下；3-右
                 if next_pos in reachable_positions and self.placeable(next_pos, wall, self.state[6], self.state[9]):
                     available_move.append(move * 4 + wall)
@@ -347,7 +353,7 @@ class ChessBoard:
         :param array: 2维数组
         :return: 1的位置
         """
-        return [np.where(array == 1)[0][0], np.where(array == 1)[1][0]]
+        return [int(np.where(array == 1)[0][0]), int(np.where(array == 1)[1][0])]
 
     def coordinates_to_array(self, coordinates: list) -> np.ndarray:
         """
@@ -359,4 +365,3 @@ class ChessBoard:
         for coordinate in coordinates:
             array[coordinate[0]][coordinate[1]] = 1
         return array
-

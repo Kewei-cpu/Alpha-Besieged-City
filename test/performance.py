@@ -9,7 +9,7 @@ if __name__ == '__main__':
 
     steps = []
     wins = []
-    n = 100
+    n = 1000
     timer = time.time()
     board = ChessBoard()
     for i in range(n):

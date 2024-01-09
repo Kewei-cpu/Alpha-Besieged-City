@@ -2,7 +2,6 @@ import math
 import random
 import sys
 
-import numpy as np
 import pygame
 from pygame.locals import *
 
@@ -108,21 +107,19 @@ class Game:
         :param scr:屏幕
         :return:
         """
-        player_X_pos = self.board.array_to_only_coordinate(self.board.state[0])
-        player_O_pos = self.board.array_to_only_coordinate(self.board.state[3])
 
         pygame.draw.circle(
             surface=scr,
             color=self.BLUE,
-            center=(game.border_size + (player_X_pos[1] + 0.5) * game.grid_size,
-                    game.border_size + (player_X_pos[0] + 0.5) * game.grid_size),
+            center=(game.border_size + (self.board.player_pos[0][1] + 0.5) * game.grid_size,
+                    game.border_size + (self.board.player_pos[0][0] + 0.5) * game.grid_size),
             radius=game.grid_size * 0.3,
         )
         pygame.draw.circle(
             surface=scr,
             color=self.GREEN,
-            center=(game.border_size + (player_O_pos[1] + 0.5) * game.grid_size,
-                    game.border_size + (player_O_pos[0] + 0.5) * game.grid_size),
+            center=(game.border_size + (self.board.player_pos[1][1] + 0.5) * game.grid_size,
+                    game.border_size + (self.board.player_pos[1][0] + 0.5) * game.grid_size),
             radius=game.grid_size * 0.3,
         )
 
@@ -132,9 +129,9 @@ class Game:
         :param scr: 屏幕
         :return:
         """
-        pos_index = 0 if self.board.state[12, 0, 0] == 0 else 3
+
         color = self.BLUE if self.board.state[12, 0, 0] == 0 else self.GREEN
-        pos = self.board.array_to_only_coordinate(self.board.state[pos_index])
+        pos = self.board.player_pos[int(self.board.state[12, 0, 0])]
 
         pygame.draw.circle(
             surface=scr,
@@ -151,22 +148,20 @@ class Game:
         :param scr: 屏幕
         :return:
         """
-        player_X_pos = self.board.array_to_only_coordinate(self.board.state[0])
-        player_O_pos = self.board.array_to_only_coordinate(self.board.state[3])
 
         pygame.draw.circle(
             surface=scr,
             color=[int(color * 0.7) for color in self.BLUE],
-            center=(game.border_size + (player_X_pos[1] + 0.5) * game.grid_size,
-                    game.border_size + (player_X_pos[0] + 0.5) * game.grid_size),
+            center=(game.border_size + (self.board.player_pos[0][1] + 0.5) * game.grid_size,
+                    game.border_size + (self.board.player_pos[0][0] + 0.5) * game.grid_size),
             radius=game.grid_size * 0.3,
             width=self.padding_size // 4,
         )
         pygame.draw.circle(
             surface=scr,
             color=[int(color * 0.7) for color in self.GREEN],
-            center=(game.border_size + (player_O_pos[1] + 0.5) * game.grid_size,
-                    game.border_size + (player_O_pos[0] + 0.5) * game.grid_size),
+            center=(game.border_size + (self.board.player_pos[1][1] + 0.5) * game.grid_size,
+                    game.border_size + (self.board.player_pos[1][0] + 0.5) * game.grid_size),
             radius=game.grid_size * 0.3,
             width=self.padding_size // 4,
         )
@@ -183,8 +178,8 @@ class Game:
         move = self.board.action_to_pos[self.mouse_pos_to_action(pygame.mouse.get_pos()) // 4]
         wall = self.mouse_pos_to_action(pygame.mouse.get_pos()) % 4
 
-        destination = (self.board.array_to_only_coordinate(self.board.state[self.active_player_pos_index])[0] + move[0],
-                       self.board.array_to_only_coordinate(self.board.state[self.active_player_pos_index])[1] + move[1])
+        destination = (self.board.player_pos[int(self.board.state[12, 0, 0])][0] + move[0],
+                       self.board.player_pos[int(self.board.state[12, 0, 0])][1] + move[1])
 
         if wall == 0:
             self.draw_horizontal_wall(scr, self.active_player_color, destination[0] - 1, destination[1])
@@ -212,9 +207,9 @@ class Game:
         available_positions = []
         for action in self.board.available_actions:
             pos = (self.board.action_to_pos[action // 4][0] +
-                   self.board.array_to_only_coordinate(self.board.state[self.active_player_pos_index])[0],
+                   self.board.player_pos[int(self.board.state[12, 0, 0])][0],
                    self.board.action_to_pos[action // 4][1] +
-                   self.board.array_to_only_coordinate(self.board.state[self.active_player_pos_index])[1]
+                   self.board.player_pos[int(self.board.state[12, 0, 0])][1]
                    )
             if pos not in available_positions:
                 available_positions.append(pos)
@@ -345,7 +340,7 @@ class Game:
         x, y = mouse_pos
         grid = (y - self.border_size) // self.grid_size, (x - self.border_size) // self.grid_size
 
-        active_pos = self.board.array_to_only_coordinate(self.board.state[self.active_player_pos_index])
+        active_pos = self.board.player_pos[int(self.board.state[12, 0, 0])]
 
         move = grid[0] - active_pos[0], grid[1] - active_pos[1]
 
@@ -547,5 +542,5 @@ class Game:
 
 
 if __name__ == '__main__':
-    game = Game(7, 100, 50, 24, robot=(1,))
+    game = Game(7, 100, 50, 24, )
     game.main()
