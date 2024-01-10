@@ -1,9 +1,9 @@
 # coding:utf-8
 import json
+import multiprocessing
 import os
 import time
 import traceback
-import multiprocessing
 
 import torch
 import torch.nn.functional as F
@@ -16,7 +16,6 @@ from .chess_board import ChessBoard
 from .policy_value_net import PolicyValueNet
 from .self_play_dataset import SelfPlayData, SelfPlayDataSet
 
-from torchsummary import summary
 
 def exception_handler(train_func):
     """ 异常处理装饰器 """
@@ -67,7 +66,8 @@ class TrainModel:
     """ 训练模型 """
 
     def __init__(self, board_len=7, lr=1e-4, n_self_plays=10, n_mcts_iters=500,
-                 n_feature_planes=13, policy_output_dim=100, batch_size=500, start_train_size=500, max_process=4, check_frequency=100,
+                 n_feature_planes=13, policy_output_dim=100, batch_size=500, start_train_size=500, max_process=4,
+                 check_frequency=100,
                  n_test_games=10, c_puct=4, gamma=0.8, is_use_gpu=True, is_save_game=False, **kwargs):
         """
         Parameters
@@ -119,7 +119,7 @@ class TrainModel:
         self.is_save_game = is_save_game
         self.check_frequency = check_frequency
         self.start_train_size = start_train_size
-        self.max_process =  max_process
+        self.max_process = max_process
         self.device = torch.device('cuda:0' if is_use_gpu and cuda.is_available() else 'cpu')
         self.chess_board = ChessBoard(board_len, n_feature_planes)
 
@@ -197,7 +197,7 @@ class TrainModel:
 
         self_play_data = SelfPlayData(pi_list=pi_list, z_list=z_list, feature_planes_list=feature_planes_list)
         return self_play_data
-    
+
     def play_once(self, num):
         """进行单次自对弈并且加入数据集"""
         game_timer = time.time()
@@ -211,8 +211,9 @@ class TrainModel:
         ctx = multiprocessing.get_context("spawn")
         pool = ctx.Pool(processes=self.max_process)
         for i in range(self.n_self_plays):
-            pool.apply(func=print, args=(f'🏹 正在进行第 {i*self.max_process+1} 至 {(i+1)*self.max_process} 局自我博弈游戏...', ' '))
-            results = pool.map(func=self.play_once, iterable=range(i*self.max_process, (i+1)*self.max_process))
+            pool.apply(func=print, args=(
+            f'🏹 正在进行第 {i * self.max_process + 1} 至 {(i + 1) * self.max_process} 局自我博弈游戏...', ' '))
+            results = pool.map(func=self.play_once, iterable=range(i * self.max_process, (i + 1) * self.max_process))
             for result in results:
                 self.dataset.append(result)
             if len(self.dataset) >= self.start_train_size:
@@ -323,12 +324,14 @@ class TrainModel:
         torch.save(self.policy_value_net, path)
         print(f'🎉 已将当前模型保存到 {os.path.join(os.getcwd(), path)}')
 
+        os.makedirs('log/train/', exist_ok=True)
+
         # 保存数据
-        with open(f'log/{loss_name}.json', 'w', encoding='utf-8') as f:
+        with open(f'log/train/{loss_name}.json', 'w', encoding='utf-8') as f:
             json.dump(self.train_losses, f)
 
         if self.is_save_game:
-            with open(f'log/{game_name}.json', 'w', encoding='utf-8') as f:
+            with open(f'log/train/{game_name}.json', 'w', encoding='utf-8') as f:
                 json.dump(self.games, f)
 
     def __do_mcts_action(self, mcts):

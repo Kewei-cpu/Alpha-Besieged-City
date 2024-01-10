@@ -1,4 +1,7 @@
+import json
+import os
 import sys
+import time
 
 import pygame
 from pygame.locals import *
@@ -34,6 +37,8 @@ class Game:
         self.active_player_color = self.BLUE
         self.blue_final_territory = []
         self.green_final_territory = []
+        self.history = []
+        self.all_games = []
 
     def display(self, scr):
         """
@@ -366,12 +371,16 @@ class Game:
         if action not in self.board.available_actions:
             return
         self.board.do_action(action)
+        self.history.append(action)
 
         if self.board.is_game_over_()[0]:
             self.running = False
 
             self.blue_final_territory = self.board.is_game_over_()[1]
             self.green_final_territory = self.board.is_game_over_()[2]
+
+            self.all_games.append(self.history)
+            self.history = []
 
             self.print_result()
 
@@ -395,6 +404,19 @@ class Game:
         else:
             print("DRAW!")
 
+    def save_games(self):
+        if not self.all_games:
+            print("No game saved")
+            return
+
+        os.makedirs('./log/board', exist_ok=True)
+
+        t = time.strftime('%Y-%m-%d_%H-%M-%S', time.localtime(time.time()))
+        with open(f'./log/board/match_history_{t}.json', 'w', encoding='utf-8') as f:
+            json.dump(self.all_games, f)
+
+        print(f"Saved {len(self.all_games)} games to ./log/games")
+
     def init_screen(self):
         """
         初始化屏幕
@@ -417,6 +439,7 @@ class Game:
         self.active_player_color = self.BLUE
         self.blue_final_territory = []
         self.green_final_territory = []
+        self.history = []
 
     def robot_handler(self):
         """
@@ -436,6 +459,7 @@ class Game:
         for event in events:
             # 退出
             if event.type == QUIT:
+                self.save_games()
                 pygame.display.quit()
                 sys.exit()
             elif event.type == MOUSEBUTTONDOWN and event.button == 1 and self.running:
@@ -461,5 +485,5 @@ class Game:
 
 if __name__ == '__main__':
     game = Game(7, 100, 50, 24,
-                ((MaxRelativeSigmoidTerritory, {"K": 3, "B": 1}), (Random, {})))
+                (None, (MaxTolerantPercentSigmoidTerritory, {"K": 2, "B": 2, "error": 0.0, "T": 0.03})))
     game.main()
