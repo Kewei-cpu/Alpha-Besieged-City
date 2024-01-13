@@ -17,7 +17,7 @@ class Game:
     GREY = (128, 128, 128)
     BLACK = (0, 0, 0)
 
-    def __init__(self, grid_num, grid_size, border_size, padding_size, robots):
+    def __init__(self, board_len, grid_size, border_size, padding_size, robots):
         """
         :param padding_size: 每个棋盘格的间距
         :param grid_num: 棋盘格数量
@@ -27,11 +27,11 @@ class Game:
         """
         self.border_size = border_size
         self.grid_size = grid_size
-        self.grid_num = grid_num
-        self.window_size = grid_num * grid_size + border_size * 2
+        self.board_len = board_len
+        self.window_size = board_len * grid_size + border_size * 2
         self.padding_size = padding_size
         self.running = True
-        self.board = ChessBoard(grid_num)
+        self.board = ChessBoard(board_len)
         self.robots = [i[0](self.board, **i[1]) if i else None for i in robots]
         self.active_player_pos_index = 0
         self.active_player_color = self.BLUE
@@ -92,15 +92,15 @@ class Game:
         :param scr: 屏幕
         :return:
         """
-        for i in range(self.grid_num):
-            for j in range(self.grid_num):
+        for i in range(self.board_len):
+            for j in range(self.board_len):
                 pygame.draw.rect(
                     surface=scr,
                     color=self.WHITE,
-                    rect=(game.border_size + j * game.grid_size + game.padding_size // 2,
-                          game.border_size + i * game.grid_size + game.padding_size // 2,
-                          game.grid_size - game.padding_size,
-                          game.grid_size - game.padding_size),
+                    rect=(self.border_size + j * self.grid_size + self.padding_size // 2,
+                          self.border_size + i * self.grid_size + self.padding_size // 2,
+                          self.grid_size - self.padding_size,
+                          self.grid_size - self.padding_size),
                     border_radius=0
                 )
 
@@ -114,16 +114,16 @@ class Game:
         pygame.draw.circle(
             surface=scr,
             color=self.BLUE,
-            center=(game.border_size + (self.board.player_pos[0][1] + 0.5) * game.grid_size,
-                    game.border_size + (self.board.player_pos[0][0] + 0.5) * game.grid_size),
-            radius=game.grid_size * 0.3,
+            center=(self.border_size + (self.board.player_pos[0][1] + 0.5) * self.grid_size,
+                    self.border_size + (self.board.player_pos[0][0] + 0.5) * self.grid_size),
+            radius=self.grid_size * 0.3,
         )
         pygame.draw.circle(
             surface=scr,
             color=self.GREEN,
-            center=(game.border_size + (self.board.player_pos[1][1] + 0.5) * game.grid_size,
-                    game.border_size + (self.board.player_pos[1][0] + 0.5) * game.grid_size),
-            radius=game.grid_size * 0.3,
+            center=(self.border_size + (self.board.player_pos[1][1] + 0.5) * self.grid_size,
+                    self.border_size + (self.board.player_pos[1][0] + 0.5) * self.grid_size),
+            radius=self.grid_size * 0.3,
         )
 
     def draw_active_player(self, scr):
@@ -139,10 +139,10 @@ class Game:
         pygame.draw.circle(
             surface=scr,
             color=[int(color * 0.7) for color in color],
-            center=(game.border_size + (pos[1] + 0.5) * game.grid_size,
-                    game.border_size + (pos[0] + 0.5) * game.grid_size),
+            center=(self.border_size + (pos[1] + 0.5) * self.grid_size,
+                    self.border_size + (pos[0] + 0.5) * self.grid_size),
             width=5,
-            radius=game.grid_size * 0.3,
+            radius=self.grid_size * 0.3,
         )
 
     def draw_dead_player(self, scr):
@@ -155,17 +155,17 @@ class Game:
         pygame.draw.circle(
             surface=scr,
             color=[int(color * 0.7) for color in self.BLUE],
-            center=(game.border_size + (self.board.player_pos[0][1] + 0.5) * game.grid_size,
-                    game.border_size + (self.board.player_pos[0][0] + 0.5) * game.grid_size),
-            radius=game.grid_size * 0.3,
+            center=(self.border_size + (self.board.player_pos[0][1] + 0.5) * self.grid_size,
+                    self.border_size + (self.board.player_pos[0][0] + 0.5) * self.grid_size),
+            radius=self.grid_size * 0.3,
             width=self.padding_size // 4,
         )
         pygame.draw.circle(
             surface=scr,
             color=[int(color * 0.7) for color in self.GREEN],
-            center=(game.border_size + (self.board.player_pos[1][1] + 0.5) * game.grid_size,
-                    game.border_size + (self.board.player_pos[1][0] + 0.5) * game.grid_size),
-            radius=game.grid_size * 0.3,
+            center=(self.border_size + (self.board.player_pos[1][1] + 0.5) * self.grid_size,
+                    self.border_size + (self.board.player_pos[1][0] + 0.5) * self.grid_size),
+            radius=self.grid_size * 0.3,
             width=self.padding_size // 4,
         )
 
@@ -196,9 +196,9 @@ class Game:
         pygame.draw.circle(
             surface=scr,
             color=[int(255 - (255 - i) * 0.5) for i in self.active_player_color],
-            center=(game.border_size + (destination[1] + 0.5) * game.grid_size,
-                    game.border_size + (destination[0] + 0.5) * game.grid_size),
-            radius=game.grid_size * 0.3,
+            center=(self.border_size + (destination[1] + 0.5) * self.grid_size,
+                    self.border_size + (destination[0] + 0.5) * self.grid_size),
+            radius=self.grid_size * 0.3,
         )
 
     def draw_available_positions(self, scr):
@@ -230,10 +230,10 @@ class Game:
                     int(light_color[2] * (1 - i / ((self.grid_size - self.padding_size) // 6))) +
                     255 * i / ((self.grid_size - self.padding_size) // 6),
                 ),
-                                 (game.border_size + pos[1] * game.grid_size + game.padding_size // 2 + i,
-                                  game.border_size + pos[0] * game.grid_size + game.padding_size // 2 + i,
-                                  game.grid_size - game.padding_size - 2 * i,
-                                  game.grid_size - game.padding_size - 2 * i),
+                                 (self.border_size + pos[1] * self.grid_size + self.padding_size // 2 + i,
+                                  self.border_size + pos[0] * self.grid_size + self.padding_size // 2 + i,
+                                  self.grid_size - self.padding_size - 2 * i,
+                                  self.grid_size - self.padding_size - 2 * i),
                                  0)
 
     def draw_final_territory(self, scr):
@@ -246,20 +246,20 @@ class Game:
             pygame.draw.rect(
                 surface=scr,
                 color=[int(255 - (255 - i) * 0.4) for i in self.BLUE],
-                rect=(game.border_size + pos[1] * game.grid_size + game.padding_size // 2,
-                      game.border_size + pos[0] * game.grid_size + game.padding_size // 2,
-                      game.grid_size - game.padding_size,
-                      game.grid_size - game.padding_size),
+                rect=(self.border_size + pos[1] * self.grid_size + self.padding_size // 2,
+                      self.border_size + pos[0] * self.grid_size + self.padding_size // 2,
+                      self.grid_size - self.padding_size,
+                      self.grid_size - self.padding_size),
             )
 
         for pos in self.green_final_territory:
             pygame.draw.rect(
                 surface=scr,
                 color=[int(255 - (255 - i) * 0.4) for i in self.GREEN],
-                rect=(game.border_size + pos[1] * game.grid_size + game.padding_size // 2,
-                      game.border_size + pos[0] * game.grid_size + game.padding_size // 2,
-                      game.grid_size - game.padding_size,
-                      game.grid_size - game.padding_size),
+                rect=(self.border_size + pos[1] * self.grid_size + self.padding_size // 2,
+                      self.border_size + pos[0] * self.grid_size + self.padding_size // 2,
+                      self.grid_size - self.padding_size,
+                      self.grid_size - self.padding_size),
             )
 
     def draw_wall(self, scr):
@@ -268,15 +268,15 @@ class Game:
         :param scr: 屏幕
         :return:
         """
-        for i in range(self.grid_num):
-            for j in range(self.grid_num):
+        for i in range(self.board_len):
+            for j in range(self.board_len):
                 if self.board.state[6, i, j] == 1:
                     self.draw_horizontal_wall(scr, self.WHITE, i, j)
                 if self.board.state[9, i, j] == 1:
                     self.draw_vertical_wall(scr, self.WHITE, i, j)
 
-    @staticmethod
-    def draw_horizontal_wall(scr, color, pos_y, pos_x, width=0):
+
+    def draw_horizontal_wall(self, scr, color, pos_y, pos_x, width=0):
         """
         绘制水平墙
         :param scr: 屏幕
@@ -289,24 +289,24 @@ class Game:
         pygame.draw.polygon(
             surface=scr,
             color=color,
-            points=((game.border_size + pos_x * game.grid_size,
-                     game.border_size + (pos_y + 1) * game.grid_size),
-                    (game.border_size + pos_x * game.grid_size + game.padding_size // 4,
-                     game.border_size + (pos_y + 1) * game.grid_size + game.padding_size // 4),
-                    (game.border_size + (pos_x + 1) * game.grid_size - game.padding_size // 4,
-                     game.border_size + (pos_y + 1) * game.grid_size + game.padding_size // 4),
-                    (game.border_size + (pos_x + 1) * game.grid_size,
-                     game.border_size + (pos_y + 1) * game.grid_size),
-                    (game.border_size + (pos_x + 1) * game.grid_size - game.padding_size // 4,
-                     game.border_size + (pos_y + 1) * game.grid_size - game.padding_size // 4),
-                    (game.border_size + pos_x * game.grid_size + game.padding_size // 4,
-                     game.border_size + (pos_y + 1) * game.grid_size - game.padding_size // 4),
+            points=((self.border_size + pos_x * self.grid_size,
+                     self.border_size + (pos_y + 1) * self.grid_size),
+                    (self.border_size + pos_x * self.grid_size + self.padding_size // 4,
+                     self.border_size + (pos_y + 1) * self.grid_size + self.padding_size // 4),
+                    (self.border_size + (pos_x + 1) * self.grid_size - self.padding_size // 4,
+                     self.border_size + (pos_y + 1) * self.grid_size + self.padding_size // 4),
+                    (self.border_size + (pos_x + 1) * self.grid_size,
+                     self.border_size + (pos_y + 1) * self.grid_size),
+                    (self.border_size + (pos_x + 1) * self.grid_size - self.padding_size // 4,
+                     self.border_size + (pos_y + 1) * self.grid_size - self.padding_size // 4),
+                    (self.border_size + pos_x * self.grid_size + self.padding_size // 4,
+                     self.border_size + (pos_y + 1) * self.grid_size - self.padding_size // 4),
                     ),
             width=width
         )
 
-    @staticmethod
-    def draw_vertical_wall(scr, color, pos_y, pos_x, width=0):
+
+    def draw_vertical_wall(self, scr, color, pos_y, pos_x, width=0):
         """
         绘制垂直墙
         :param scr: 屏幕
@@ -319,18 +319,18 @@ class Game:
         pygame.draw.polygon(
             surface=scr,
             color=color,
-            points=((game.border_size + (pos_x + 1) * game.grid_size,
-                     game.border_size + pos_y * game.grid_size),
-                    (game.border_size + (pos_x + 1) * game.grid_size + game.padding_size // 4,
-                     game.border_size + pos_y * game.grid_size + game.padding_size // 4),
-                    (game.border_size + (pos_x + 1) * game.grid_size + game.padding_size // 4,
-                     game.border_size + (pos_y + 1) * game.grid_size - game.padding_size // 4),
-                    (game.border_size + (pos_x + 1) * game.grid_size,
-                     game.border_size + (pos_y + 1) * game.grid_size),
-                    (game.border_size + (pos_x + 1) * game.grid_size - game.padding_size // 4,
-                     game.border_size + (pos_y + 1) * game.grid_size - game.padding_size // 4),
-                    (game.border_size + (pos_x + 1) * game.grid_size - game.padding_size // 4,
-                     game.border_size + pos_y * game.grid_size + game.padding_size // 4),
+            points=((self.border_size + (pos_x + 1) * self.grid_size,
+                     self.border_size + pos_y * self.grid_size),
+                    (self.border_size + (pos_x + 1) * self.grid_size + self.padding_size // 4,
+                     self.border_size + pos_y * self.grid_size + self.padding_size // 4),
+                    (self.border_size + (pos_x + 1) * self.grid_size + self.padding_size // 4,
+                     self.border_size + (pos_y + 1) * self.grid_size - self.padding_size // 4),
+                    (self.border_size + (pos_x + 1) * self.grid_size,
+                     self.border_size + (pos_y + 1) * self.grid_size),
+                    (self.border_size + (pos_x + 1) * self.grid_size - self.padding_size // 4,
+                     self.border_size + (pos_y + 1) * self.grid_size - self.padding_size // 4),
+                    (self.border_size + (pos_x + 1) * self.grid_size - self.padding_size // 4,
+                     self.border_size + pos_y * self.grid_size + self.padding_size // 4),
                     ),
             width=width)
 
@@ -406,7 +406,7 @@ class Game:
 
     def save_games(self):
         if not self.all_games:
-            print("No game saved")
+            print("No self saved")
             return
 
         os.makedirs('./log/board', exist_ok=True)

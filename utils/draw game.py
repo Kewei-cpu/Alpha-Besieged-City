@@ -82,7 +82,7 @@ while True:
             if vertical_wall[j, i] == 1:
                 pygame.draw.rect(screen, (0, 0, 0), (100 + i * width + width, 100 + j * width, 10, width))
 
-    # show game index
+    # show self index
     font = pygame.font.SysFont("Microsoft YaHei", 30)
     text = font.render(f"Game {game_index}   Move {move_count}", True, (0, 0, 0))
     text_rect = text.get_rect()

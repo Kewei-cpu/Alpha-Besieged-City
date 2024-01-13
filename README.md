@@ -48,7 +48,7 @@
 
     ```shell
     conda activate Alpha_Besieged_City 
-    python game.py
+    python self.py
     ```
 
 ## Game Rules of _Besieged City_
