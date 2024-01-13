@@ -16,7 +16,7 @@ train_config = {
     'policy_output_dim': 100,
     'check_frequency': 100,
     'start_train_size': 1000,  # 500 previously
-    'max_process': 4
+    'max_process': 8,
 }
 if __name__ == "__main__":
     train_model = TrainModel(**train_config)

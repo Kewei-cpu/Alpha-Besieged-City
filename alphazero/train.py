@@ -199,19 +199,25 @@ class TrainModel:
 
     def play_once(self, num):
         """进行单次自对弈并且加入数据集"""
-        game_timer = time.time()
-        result = self.__self_play()
-        print(f'⏱️ 第 {num + 1} 局耗时 {time.time() - game_timer:.1f} 秒')
-        return result
+        try:
+            game_timer = time.time()
+            result = self.__self_play()
+            print(f'⏱️ 第 {num + 1} 局耗时 {time.time() - game_timer:.1f} 秒')
+            return result
+        except BaseException as e:
+            if not isinstance(e, KeyboardInterrupt):
+                traceback.print_exc()
+            pass
+
 
     @exception_handler
     def train(self):
         """ 训练模型 """
         ctx = multiprocessing.get_context("spawn")
         pool = ctx.Pool(processes=self.max_process)
-        for i in range(self.n_self_plays//self.max_process):
+        for i in range(self.n_self_plays // self.max_process):
             pool.apply(func=print, args=(
-            f'🏹 正在进行第 {i * self.max_process + 1} 至 {(i + 1) * self.max_process} 局自我博弈游戏...', ' '))
+                f'🏹 正在进行第 {i * self.max_process + 1} 至 {(i + 1) * self.max_process} 局自我博弈游戏...', ' '))
             results = pool.map(func=self.play_once, iterable=range(i * self.max_process, (i + 1) * self.max_process))
             for result in results:
                 self.dataset.append(result[0])
@@ -250,7 +256,7 @@ class TrainModel:
                 print(f'⏱️ 耗时 {time.time() - train_timer:.1f} 秒')
                 print(f"🚩 train_loss = {loss.item():<10.5f}")
                 # 测试模型
-                if (i + 1)*self.max_process % self.check_frequency == 0:
+                if (i + 1) * self.max_process % self.check_frequency == 0:
                     self.__test_model()
             print()
         pool.close()
