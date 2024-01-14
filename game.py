@@ -4,9 +4,7 @@ import sys
 from PySide6.QtCore import Qt, QUrl
 from PySide6.QtGui import QIcon, QDesktopServices
 from PySide6.QtWidgets import QApplication, QFrame, QHBoxLayout
-from qfluentwidgets import FluentIcon as FIF
-from qfluentwidgets import (NavigationItemPosition, MessageBox, FluentWindow,
-                            SubtitleLabel, setFont)
+from qfluentwidgets import *
 
 from app.view import *
 
@@ -30,7 +28,7 @@ class Window(FluentWindow):
         super().__init__()
 
         # create sub interface
-        self.homeInterface = Widget('Home Interface', self)
+        self.homeInterface = HomeInterface('Home Interface', self)
         self.boardInterfaceFriend = PlayFriendInterface('Player with Friends', self)
         self.boardInterfaceRobot = PlayRobotInterface('Player with Robots', self)
         self.settingInterface = Widget('Setting Interface', self)
@@ -39,13 +37,13 @@ class Window(FluentWindow):
         self.initWindow()
 
     def initNavigation(self):
-        self.addSubInterface(self.homeInterface, FIF.HOME, 'Home')
+        self.addSubInterface(self.homeInterface, FluentIcon.HOME, 'Home')
 
         self.navigationInterface.addSeparator()
 
-        self.addSubInterface(self.boardInterfaceFriend, FIF.PEOPLE, 'Player with Friends',
+        self.addSubInterface(self.boardInterfaceFriend, FluentIcon.PEOPLE, 'Player with Friends',
                              NavigationItemPosition.SCROLL)
-        self.addSubInterface(self.boardInterfaceRobot, FIF.ROBOT, 'Player with Robots', NavigationItemPosition.SCROLL)
+        self.addSubInterface(self.boardInterfaceRobot, FluentIcon.ROBOT, 'Player with Robots', NavigationItemPosition.SCROLL)
         # add custom widget to bottom
         # self.navigationInterface.addWidget(
         #     routeKey='avatar',
@@ -54,7 +52,7 @@ class Window(FluentWindow):
         #     position=NavigationItemPosition.BOTTOM,
         # )
 
-        self.addSubInterface(self.settingInterface, FIF.SETTING, 'Settings', NavigationItemPosition.BOTTOM)
+        self.addSubInterface(self.settingInterface, FluentIcon.SETTING, 'Settings', NavigationItemPosition.BOTTOM)
 
         # add badge to navigation item
         # NOTE: enable acrylic effect

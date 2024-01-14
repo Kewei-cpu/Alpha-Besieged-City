@@ -4,6 +4,7 @@ from typing import Tuple, List, Any
 
 import numpy as np
 import torch
+from numba import jit
 from numpy import ndarray
 
 
@@ -205,13 +206,11 @@ class ChessBoard:
 
         available_move = []
 
-
         pos = self.player_pos[int(self.state[12, 0, 0])]
         for next_pos in self.reachable_positions(active_player_pos, passive_player_pos, horizontal_wall, vertical_wall):
             for wall in range(4):
                 if self.placeable(next_pos, wall, horizontal_wall, vertical_wall):
                     available_move.append(self.pos_to_action[(next_pos[0] - pos[0], next_pos[1] - pos[1])] * 4 + wall)
-
 
         return available_move
 
@@ -260,7 +259,8 @@ class ChessBoard:
 
         return visited
 
-    def reachable_destination(self, pos, destination, horizontal_wall, vertical_wall, ) -> bool:
+    def reachable_destination(self, pos: ndarray, destination: ndarray, horizontal_wall: ndarray,
+                              vertical_wall: ndarray) -> bool:
         """
         可到达的位置，采用BFS遍历
         :param pos: 起始位置， one-hot编码
@@ -329,19 +329,23 @@ class ChessBoard:
                 territory[current] = i
 
                 if current[0] - 1 >= 0 and horizontal_wall[current[0] - 1][current[1]] == 0 and \
-                    (current[0] - 1, current[1]) not in visited and not other_player_pos[current[0] - 1, current[1]]:
+                        (current[0] - 1, current[1]) not in visited and not other_player_pos[
+                    current[0] - 1, current[1]]:
                     queue.append((current[0] - 1, current[1]))
                     visited.append((current[0] - 1, current[1]))
                 if current[1] - 1 >= 0 and vertical_wall[current[0]][current[1] - 1] == 0 and \
-                    (current[0], current[1] - 1) not in visited and not other_player_pos[current[0], current[1] - 1]:
+                        (current[0], current[1] - 1) not in visited and not other_player_pos[
+                    current[0], current[1] - 1]:
                     queue.append((current[0], current[1] - 1))
                     visited.append((current[0], current[1] - 1))
                 if current[0] + 1 < self.board_len and horizontal_wall[current[0]][current[1]] == 0 and \
-                    (current[0] + 1, current[1]) not in visited and not other_player_pos[current[0] + 1, current[1]]:
+                        (current[0] + 1, current[1]) not in visited and not other_player_pos[
+                    current[0] + 1, current[1]]:
                     queue.append((current[0] + 1, current[1]))
                     visited.append((current[0] + 1, current[1]))
                 if current[1] + 1 < self.board_len and vertical_wall[current[0]][current[1]] == 0 and \
-                    (current[0], current[1] + 1) not in visited and not other_player_pos[current[0], current[1] + 1]:
+                        (current[0], current[1] + 1) not in visited and not other_player_pos[
+                    current[0], current[1] + 1]:
                     queue.append((current[0], current[1] + 1))
                     visited.append((current[0], current[1] + 1))
 

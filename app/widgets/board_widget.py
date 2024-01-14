@@ -235,12 +235,15 @@ class BoardWidget(QWidget):
 
             grad.setColorAt(0, QColor(*light_color, 0))
             grad.setColorAt(1, QColor(*light_color, 180))
-            painter.fillRect(
+            painter.setPen(QColor(*WHITE, 0))
+            painter.setBrush(grad)
+            painter.drawRoundedRect(
                 self.margin_size[0] + pos[1] * self.grid_size + self.padding_size / 2,
                 self.margin_size[1] + pos[0] * self.grid_size + self.padding_size / 2,
                 self.grid_size - self.padding_size,
                 self.grid_size - self.padding_size,
-                grad,
+                5,
+                5
             )
 
     def drawFinalTerritory(self, painter: QPainter):
@@ -463,4 +466,3 @@ class BoardWidget(QWidget):
         content += f"BLUE:{blue_score}, GREEN:{green_score}"
 
         self.createGameOverInfoBar(title, content, color)
-

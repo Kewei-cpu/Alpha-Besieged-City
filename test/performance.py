@@ -9,7 +9,7 @@ import pstats
 from io import StringIO
 
 
-N = 100
+N = 1000
 def main():
     steps = []
     wins = []

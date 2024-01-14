@@ -1,0 +1,261 @@
+# coding:utf-8
+import sys
+from pathlib import Path
+
+from PySide6.QtCore import Qt, QPoint, QSize, QUrl, QRect, QPropertyAnimation
+from PySide6.QtGui import QFont, QColor, QPainter
+from PySide6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QGraphicsOpacityEffect
+from qfluentwidgets import *
+from qfluentwidgets.components.widgets.acrylic_label import AcrylicBrush
+
+
+def isWin11():
+    return sys.platform == 'win32' and sys.getwindowsversion().build >= 22000
+
+
+if isWin11():
+    pass
+else:
+    pass
+
+
+class EmojiCard(ElevatedCardWidget):
+    """ Emoji card """
+
+    def __init__(self, iconPath: str, parent=None):
+        super().__init__(parent)
+        self.iconWidget = ImageLabel(iconPath, self)
+        self.label = CaptionLabel(Path(iconPath).stem, self)
+
+        self.iconWidget.scaledToHeight(68)
+
+        self.vBoxLayout = QVBoxLayout(self)
+        self.vBoxLayout.setAlignment(Qt.AlignCenter)
+        self.vBoxLayout.addStretch(1)
+        self.vBoxLayout.addWidget(self.iconWidget, 0, Qt.AlignCenter)
+        self.vBoxLayout.addStretch(1)
+        self.vBoxLayout.addWidget(
+            self.label, 0, Qt.AlignHCenter | Qt.AlignBottom)
+
+        self.setFixedSize(168, 176)
+
+
+class StatisticsWidget(QWidget):
+    """ Statistics widget """
+
+    def __init__(self, title: str, value: str, parent=None):
+        super().__init__(parent=parent)
+        self.titleLabel = CaptionLabel(title, self)
+        self.valueLabel = BodyLabel(value, self)
+        self.valueLabel.setAlignment(Qt.AlignCenter)
+        self.vBoxLayout = QVBoxLayout(self)
+
+        self.vBoxLayout.setContentsMargins(16, 0, 16, 0)
+        self.vBoxLayout.addWidget(self.valueLabel, 0, Qt.AlignTop)
+        self.vBoxLayout.addWidget(self.titleLabel, 0, Qt.AlignBottom)
+
+        setFont(self.valueLabel, 18, QFont.DemiBold)
+        self.titleLabel.setTextColor(QColor(96, 96, 96), QColor(206, 206, 206))
+
+
+class AppInfoCard(SimpleCardWidget):
+    """ App information card """
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.iconLabel = ImageLabel("resources/icon/bluegreen.png", self)
+        self.iconLabel.setBorderRadius(8, 8, 8, 8)
+        self.iconLabel.scaledToWidth(160)
+
+        self.nameLabel = TitleLabel('Alpha Besieged City', self)
+        self.installButton = HyperlinkButton('https://github.com/Kewei-cpu/Alpha-Besieged-City', 'Github Page', self, FluentIcon.GITHUB)
+        self.companyLabel = HyperlinkLabel(
+            QUrl('https://github.com/Kewei-cpu'), 'Keweijun', self)
+        self.installButton.setFixedWidth(160)
+
+        self.scoreWidget = StatisticsWidget('Star', '1', self)
+        self.separator = VerticalSeparator(self)
+        self.commentWidget = StatisticsWidget('Fork', '1', self)
+
+        self.descriptionLabel = BodyLabel(
+            'A novel two-player board game. Your goal is to get the maximum territory and win. Detailed rules can be found bolow. Several AI models are also integrated.',
+            self)
+        self.descriptionLabel.setWordWrap(True)
+
+        # self.tagButton = PillPushButton('组件库', self)
+        # self.tagButton.setCheckable(False)
+        # setFont(self.tagButton, 12)
+        # self.tagButton.setFixedSize(80, 32)
+        #
+        # self.shareButton = TransparentToolButton(FluentIcon.SHARE, self)
+        # self.shareButton.setFixedSize(32, 32)
+        # self.shareButton.setIconSize(QSize(14, 14))
+
+        self.hBoxLayout = QHBoxLayout(self)
+        self.vBoxLayout = QVBoxLayout()
+        self.topLayout = QHBoxLayout()
+        self.statisticsLayout = QHBoxLayout()
+        # self.buttonLayout = QHBoxLayout()
+
+        self.initLayout()
+
+    def initLayout(self):
+        self.hBoxLayout.setSpacing(30)
+        self.hBoxLayout.setContentsMargins(34, 24, 24, 24)
+        self.hBoxLayout.addWidget(self.iconLabel)
+        self.hBoxLayout.addLayout(self.vBoxLayout)
+
+        self.vBoxLayout.setContentsMargins(0, 0, 0, 0)
+        self.vBoxLayout.setSpacing(0)
+
+        # name label and install button
+        self.vBoxLayout.addLayout(self.topLayout)
+        self.topLayout.setContentsMargins(0, 0, 0, 0)
+        self.topLayout.addWidget(self.nameLabel)
+        self.topLayout.addWidget(self.installButton, 0, Qt.AlignRight)
+
+        # company label
+        self.vBoxLayout.addSpacing(3)
+        self.vBoxLayout.addWidget(self.companyLabel)
+
+        # statistics widgets
+        self.vBoxLayout.addSpacing(20)
+        self.vBoxLayout.addLayout(self.statisticsLayout)
+        self.statisticsLayout.setContentsMargins(0, 0, 0, 0)
+        self.statisticsLayout.setSpacing(10)
+        self.statisticsLayout.addWidget(self.scoreWidget)
+        self.statisticsLayout.addWidget(self.separator)
+        self.statisticsLayout.addWidget(self.commentWidget)
+        self.statisticsLayout.setAlignment(Qt.AlignLeft)
+
+        # description label
+        self.vBoxLayout.addSpacing(20)
+        self.vBoxLayout.addWidget(self.descriptionLabel)
+
+        # # button
+        # self.vBoxLayout.addSpacing(12)
+        # self.buttonLayout.setContentsMargins(0, 0, 0, 0)
+        # self.vBoxLayout.addLayout(self.buttonLayout)
+        # self.buttonLayout.addWidget(self.tagButton, 0, Qt.AlignLeft)
+        # self.buttonLayout.addWidget(self.shareButton, 0, Qt.AlignRight)
+
+
+class DescriptionCard(HeaderCardWidget):
+    """ Description card """
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setTitle('Rules')
+        setFont(self.headerLabel, 22, QFont.DemiBold)
+
+        self.contentLayout = QVBoxLayout()
+
+        self.gameLabel = BodyLabel('Game Board', self)
+        setFont(self.gameLabel, 18, QFont.DemiBold)
+        self.contentLayout.addWidget(self.gameLabel)
+
+        text = """<ul style="list-style:circle;margin-left:-1.5em;">
+<li>The game board is officially a <b>7x7 grid</b>, but you can change it to any size you want.
+<li>This game if played with 2 players. <strong>Player Blue</strong> is started on the left top corner, and <strong>Player Green</strong> is started on the right bottom corner.
+        """
+
+        self.descriptionLabel = BodyLabel(text, self)
+        setFont(self.descriptionLabel, 16)
+        self.descriptionLabel.setWordWrap(True)
+        self.contentLayout.addWidget(self.descriptionLabel)
+
+        self.gameLabel = BodyLabel('Move and Place', self)
+        setFont(self.gameLabel, 18, QFont.DemiBold)
+        self.contentLayout.addWidget(self.gameLabel)
+
+        text = """<ul style="list-style:circle;margin-left:-1.5em;">
+        <li><b>Player Blue</b> goes first, then two player go in turn. Each turn, a player move his/her pieces, and place a new wall on the board.
+        <li>A <b>step</b> is defined as moving a piece to a neighboring grid (up, down, left, right) that is not occupied by another piece or blocked by a wall.
+        <li>A legal move can include <b>0~3 steps</b>, which means the player can stay in the same grid.
+        <li>After move, the player <b>MUST</b> place a wall on the board. The wall can only be placed on one of the <b>four sides</b> of the grid that the player move to. Walls cannot be placed on another wall or on the outer edge of the board.
+                """
+        self.descriptionLabel = BodyLabel(text, self)
+        setFont(self.descriptionLabel, 16)
+        self.descriptionLabel.setWordWrap(True)
+        self.contentLayout.addWidget(self.descriptionLabel)
+
+        self.gameLabel = BodyLabel('Win or Lose', self)
+        setFont(self.gameLabel, 18, QFont.DemiBold)
+        self.contentLayout.addWidget(self.gameLabel)
+
+        text = """<ul style="list-style:circle;margin-left:-1.5em;">
+        <li>The game ends when two players' pieces are <b>completely seperated</b> by walls, which means one player cannot reach the other no matter how many steps he/she moves.
+        <li>A player's territory is the number of grids that he/she can reach when the game ends. A grid that cannot be reached by any player is not counted as any player's territory.
+        <li><b>The player with more territory wins.</b>
+                """
+
+        self.descriptionLabel = BodyLabel(text, self)
+        setFont(self.descriptionLabel, 16)
+        self.descriptionLabel.setWordWrap(True)
+        self.contentLayout.addWidget(self.descriptionLabel)
+
+        self.viewLayout.addLayout(self.contentLayout)
+
+
+class SystemRequirementCard(HeaderCardWidget):
+    """ System requirements card """
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setTitle('系统要求')
+        self.infoLabel = BodyLabel('此产品适用于你的设备。具有复选标记的项目符合开发人员的系统要求。', self)
+        self.successIcon = IconWidget(InfoBarIcon.SUCCESS, self)
+        self.detailButton = HyperlinkLabel('详细信息', self)
+
+        self.vBoxLayout = QVBoxLayout()
+        self.hBoxLayout = QHBoxLayout()
+
+        self.successIcon.setFixedSize(16, 16)
+        self.hBoxLayout.setSpacing(10)
+        self.vBoxLayout.setSpacing(16)
+        self.hBoxLayout.setContentsMargins(0, 0, 0, 0)
+        self.vBoxLayout.setContentsMargins(0, 0, 0, 0)
+
+        self.hBoxLayout.addWidget(self.successIcon)
+        self.hBoxLayout.addWidget(self.infoLabel)
+        self.vBoxLayout.addLayout(self.hBoxLayout)
+        self.vBoxLayout.addWidget(self.detailButton)
+
+        self.viewLayout.addLayout(self.vBoxLayout)
+
+
+class HomeInterface(SingleDirectionScrollArea):
+
+    def __init__(self, text, parent):
+        super().__init__(parent)
+
+        self.view = QWidget(self)
+
+        self.vBoxLayout = QVBoxLayout(self.view)
+        self.appCard = AppInfoCard(self)
+        # self.galleryCard = GalleryCard(self)
+        self.descriptionCard = DescriptionCard(self)
+        # self.systemCard = SystemRequirementCard(self)
+
+        # self.lightBox = LightBox(self)
+        # self.lightBox.hide()
+        # self.galleryCard.flipView.itemClicked.connect(self.showLightBox)
+
+        self.setWidget(self.view)
+        self.setWidgetResizable(True)
+        self.setObjectName(text)
+
+        self.vBoxLayout.setSpacing(10)
+        self.vBoxLayout.setContentsMargins(10, 10, 10, 30)
+        self.vBoxLayout.addWidget(self.appCard, 0, Qt.AlignTop)
+        # self.vBoxLayout.addWidget(self.galleryCard, 0, Qt.AlignTop)
+        self.vBoxLayout.addWidget(self.descriptionCard, 0, Qt.AlignTop)
+        # self.vBoxLayout.addWidget(self.systemCard, 0, Qt.AlignTop)
+
+        self.setStyleSheet("QScrollArea {border: none; background:transparent}")
+        self.view.setStyleSheet('QWidget {background:transparent}')
+
+
+    def resizeEvent(self, e):
+        super().resizeEvent(e)
+

@@ -14,7 +14,7 @@ train_config = {
     'is_save_game': True,
     'n_feature_planes': 13,
     'policy_output_dim': 100,
-    'check_frequency': 100,
+    'check_frequency': 128,
     'start_train_size': 1000,  # 500 previously
     'max_process': 8,
 }

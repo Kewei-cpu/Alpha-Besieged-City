@@ -8,13 +8,13 @@ from arena import *
 
 
 class Arena:
-    def __init__(self, board: ChessBoard, robots: list[type], param_list: list[dict], N=120):
+    def __init__(self, robots: list[type], param_list: list[dict], N=120):
         """
         :param robots: 机器人的类的列表
         :param N: 每个机器人的对局次数
         """
-        self.board = board
-        self.robots = [robot(board, **param) for robot, param in zip(robots, param_list)]  # 实例化
+        self.board = ChessBoard()
+        self.robots = [robot(self.board, **param) for robot, param in zip(robots, param_list)]  # 实例化
         self.all_games = []
         self.N = N
 
@@ -80,4 +80,3 @@ class Game:
                 green_score = len(self.board.is_game_over_()[2])
                 self.board.clear_board()
                 return blue_score, green_score, self.all_moves
-
