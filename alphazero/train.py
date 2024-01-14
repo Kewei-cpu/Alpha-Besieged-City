@@ -191,12 +191,11 @@ class TrainModel:
         # 重置根节点
         self.mcts.reset_root()
 
-        # 返回数据
-        if self.is_save_game:
-            self.games.append(action_list)
-
         self_play_data = SelfPlayData(pi_list=pi_list, z_list=z_list, feature_planes_list=feature_planes_list)
-        return self_play_data
+        if self.is_save_game:
+            return (self_play_data, action_list)
+        else:
+            return (self_play_data,)
 
     def play_once(self, num):
         """进行单次自对弈并且加入数据集"""
@@ -210,12 +209,14 @@ class TrainModel:
         """ 训练模型 """
         ctx = multiprocessing.get_context("spawn")
         pool = ctx.Pool(processes=self.max_process)
-        for i in range(self.n_self_plays):
+        for i in range(self.n_self_plays//self.max_process):
             pool.apply(func=print, args=(
             f'🏹 正在进行第 {i * self.max_process + 1} 至 {(i + 1) * self.max_process} 局自我博弈游戏...', ' '))
             results = pool.map(func=self.play_once, iterable=range(i * self.max_process, (i + 1) * self.max_process))
             for result in results:
-                self.dataset.append(result)
+                self.dataset.append(result[0])
+                if self.is_save_game:
+                    self.games.append(result[1])
             if len(self.dataset) >= self.start_train_size:
                 data_loader = iter(DataLoader(self.dataset, self.batch_size, shuffle=True, drop_last=False))
 
@@ -249,7 +250,7 @@ class TrainModel:
                 print(f'⏱️ 耗时 {time.time() - train_timer:.1f} 秒')
                 print(f"🚩 train_loss = {loss.item():<10.5f}")
                 # 测试模型
-                if (i + 1) % self.check_frequency == 0:
+                if (i + 1)*self.max_process % self.check_frequency == 0:
                     self.__test_model()
             print()
         pool.close()
