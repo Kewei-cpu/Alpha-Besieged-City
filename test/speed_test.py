@@ -4,12 +4,12 @@ from multiprocessing import Pool
 
 from alphazero import ChessBoard
 
-N = 100000
+N = 10000
 
 
-def main(n):
+def main():
     board = ChessBoard()
-    for i in range(n):
+    for i in range(N):
         while True:
             if board.is_game_over()[0]:
                 break
@@ -18,14 +18,9 @@ def main(n):
         board.clear_board()
 
 
-def multiprocess():
-    process = 16
-    with Pool(process) as pool:
-        pool.map(main, [N // process] * process)
-
 
 if __name__ == '__main__':
-    total_time = timeit.timeit(multiprocess, number=1)
+    total_time = timeit.timeit(main, number=1)
     print("total time:", total_time)
     print("avg time:", total_time / N)
     print("Moves/s", N * 22 / total_time)

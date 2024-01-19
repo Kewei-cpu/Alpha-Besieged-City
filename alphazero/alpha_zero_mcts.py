@@ -78,7 +78,7 @@ class AlphaZeroMCTS:
             node.backup(-value)
 
         # 计算 π，在自我博弈状态下：游戏的前三十步，温度系数为 1，后面的温度系数趋于无穷小
-        T = 1 if self.is_self_play and len(chess_board.state) <= 30 else 1e-3
+        T = 1 if self.is_self_play and len(chess_board.step_count) <= 10 else 1e-3
         visits = np.array([i.N for i in self.root.children.values()])
         pi_ = self.__getPi(visits, T)
 

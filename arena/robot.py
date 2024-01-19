@@ -125,7 +125,7 @@ class MaxTerritory(Robot):
     def play(self):
         if random.random() < self.error:
             # 10%的概率随机走，增加对局多样性
-            print("Random")
+            # print("Random")
             return random.choice(self.board.available_actions)
 
         all_scores = self.get_action_scores()
@@ -332,8 +332,8 @@ class MaxTolerantPercentSigmoidTerritory(MaxPercentSigmoidTerritory):
 
     def play(self):
         if random.random() < self.error:
-            # 10%的概率随机走，增加对局多样性
-            print("Random")
+            # 概率随机走，增加对局多样性
+            # print("Random")
             return random.choice(self.board.available_actions)
 
         all_scores = self.get_action_scores()

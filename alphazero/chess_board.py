@@ -92,6 +92,7 @@ class ChessBoard:
     def do_action(self, action: int, update_available_actions=True):
         """
         执行动作
+        :param update_available_actions:
         :param action: 动作，范围为 0 ~ 99
         :return:
         """
@@ -154,8 +155,8 @@ class ChessBoard:
         :return: （是否结束， 胜利者） 胜利者为 0 代表 X 胜利， 1 代表 O 胜利， None 代表平局
         """
 
-        if not self.reachable_destination(self.state[0], self.state[3],
-                                          self.state[6], self.state[9]):
+        if not self.reachable_destination(self.state[0], self.state[3], self.state[6], self.state[9]):
+
             x_territory = self.reachable_positions(self.state[0], self.state[3],
                                                    self.state[6], self.state[9],
                                                    ignore_other_player=True, step=self.board_len ** 2)
@@ -232,10 +233,9 @@ class ChessBoard:
         queue = [pos]
         visited = [pos]
         for i in range(step):
-            if len(queue) == 0:
-                break
             for j in range(len(queue)):
                 current = queue.pop(0)
+
                 if current[0] - 1 >= 0 and horizontal_wall[current[0] - 1][current[1]] == 0 and (
                         current[0] - 1, current[1]) not in visited and (
                         not other_player_pos[current[0] - 1, current[1]] or ignore_other_player):
@@ -270,6 +270,10 @@ class ChessBoard:
         :return: 可到达的位置列表
         """
 
+        def manhattan_distance(pos1, pos2) -> int:
+            return abs(pos1[0] - pos2[0]) + abs(pos1[1] - pos2[1])
+
+
         pos = self.array_to_only_coordinate(pos)
         destination = self.array_to_only_coordinate(destination)
         step = self.board_len ** 2
@@ -277,12 +281,10 @@ class ChessBoard:
         queue = [pos]
         visited = [pos]
         for i in range(step):
-            if len(queue) == 0:
-                break
-            if destination in visited:
-                return True
-
             for j in range(len(queue)):
+                if destination in visited:
+                    return True
+                queue.sort(key=lambda x: manhattan_distance(x, destination))
                 current = queue.pop(0)
                 if current[0] - 1 >= 0 and horizontal_wall[current[0] - 1][current[1]] == 0 and (
                         current[0] - 1, current[1]) not in visited:
@@ -322,8 +324,6 @@ class ChessBoard:
         queue = [pos]
         visited = [pos]
         for i in range(step):
-            if len(queue) == 0:
-                break
             for j in range(len(queue)):
                 current = queue.pop(0)
                 territory[current] = i

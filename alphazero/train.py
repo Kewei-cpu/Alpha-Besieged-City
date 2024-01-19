@@ -219,10 +219,12 @@ class TrainModel:
             pool.apply(func=print, args=(
                 f'🏹 正在进行第 {i * self.max_process + 1} 至 {(i + 1) * self.max_process} 局自我博弈游戏...', ' '))
             results = pool.map(func=self.play_once, iterable=range(i * self.max_process, (i + 1) * self.max_process))
+
             for result in results:
                 self.dataset.append(result[0])
                 if self.is_save_game:
                     self.games.append(result[1])
+
             if len(self.dataset) >= self.start_train_size:
                 data_loader = iter(DataLoader(self.dataset, self.batch_size, shuffle=True, drop_last=False))
 
@@ -236,6 +238,7 @@ class TrainModel:
                 feature_planes, pi, z = next(data_loader)
                 feature_planes = feature_planes.to(self.device)
                 pi, z = pi.to(self.device), z.to(self.device)
+
                 for _ in range(5):
                     # 前馈
                     p_hat, value = self.policy_value_net(feature_planes)

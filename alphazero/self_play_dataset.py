@@ -4,6 +4,7 @@ from collections import deque, namedtuple
 import torch
 from torch import Tensor
 from torch.utils.data import Dataset
+from tqdm import tqdm
 
 SelfPlayData = namedtuple(
     'SelfPlayData', ['pi_list', 'z_list', 'feature_planes_list'])
@@ -14,7 +15,7 @@ class SelfPlayDataSet(Dataset):
 
     def __init__(self, board_len=7):
         super().__init__()
-        self.__data_deque = deque(maxlen=10000)
+        self.__data_deque = deque(maxlen=1000000)
         self.board_len = board_len
         self.flip_dict = {0: 37, 1: 36, 2: 39, 3: 38, 4: 17, 5: 16, 6: 19, 7: 18, 8: 41, 9: 40, 10: 43, 11: 42, 12: 65,
                           13: 64, 14: 67, 15: 66, 16: 5, 17: 4, 18: 7, 19: 6, 20: 21, 21: 20, 22: 23, 23: 22, 24: 45,
@@ -43,7 +44,7 @@ class SelfPlayDataSet(Dataset):
         pi_list = self_play_data.pi_list
         feature_planes_list = self_play_data.feature_planes_list
         # 使用翻转和镜像扩充已有数据集
-        for z, pi, feature_planes in zip(z_list, pi_list, feature_planes_list):
+        for z, pi, feature_planes in tqdm(zip(z_list, pi_list, feature_planes_list), ncols=80, desc="Expanding data"):
             self.__data_deque.append((feature_planes, Tensor(pi), z))
 
             # 沿主对角线翻转

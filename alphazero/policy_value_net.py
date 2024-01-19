@@ -123,6 +123,7 @@ class PolicyValueNet(nn.Module):
         self.residues = nn.Sequential(*[ResidueBlock(32, 32) for i in range(4)])
         self.policy_head = PolicyHead(32, board_len, policy_output_dim)
         self.value_head = ValueHead(32, board_len)
+        self.to(self.device)
 
     def forward(self, x):
         """ 前馈，输出 `p_hat` 和 `V`
