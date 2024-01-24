@@ -1,13 +1,32 @@
+from collections import deque
+
 import torch
 from torch.optim import Adam
 from torch.optim.lr_scheduler import ExponentialLR
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Dataset
 from tqdm import tqdm
 
 from alphazero import PolicyValueNet, ChessBoard
 from alphazero.self_play_dataset import SelfPlayDataSet, SelfPlayData
 from alphazero.train import PolicyValueLoss
-from data_generation import get_data
+
+class GameDataset(Dataset):
+    """ 自我博弈数据集类，每个样本为元组 `(feature_planes, pi, z)` """
+
+    def __init__(self, data_list):
+        super().__init__()
+        self.__data_deque = deque(data_list)
+
+    def __len__(self):
+        return len(self.__data_deque)
+
+    def __getitem__(self, index):
+        return self.__data_deque[index]
+
+    def clear(self):
+        """ 清空数据集 """
+        self.__data_deque.clear()
+
 
 device = torch.device('cuda:0')
 chess_board = ChessBoard(board_len=7)
@@ -23,12 +42,7 @@ criterion = PolicyValueLoss()
 lr_scheduler = ExponentialLR(optimizer, gamma=0.998)  # 0.998 ** 1000 = 0.135
 
 # 创建数据集
-dataset = SelfPlayDataSet(board_len=7)
-
-feature_list, pi_list, z_list = get_data('./data/match_history_max_vs_max.json')
-
-dataset.append(
-    SelfPlayData(feature_planes_list=feature_list, pi_list=pi_list, z_list=z_list))
+dataset = SelfPlayDataSet(torch.load("./data/data_deque.pth"))
 
 policy_value_net.train()
 

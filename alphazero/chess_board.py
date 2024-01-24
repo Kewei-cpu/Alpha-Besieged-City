@@ -44,7 +44,7 @@ class ChessBoard:
         self.board_len = board_len
         self.n_feature_planes = n_feature_planes
 
-        self.state = np.zeros((self.n_feature_planes, self.board_len, self.board_len))
+        self.state = np.zeros((self.n_feature_planes, self.board_len, self.board_len), dtype=int)
         # index 0  蓝色 位置
         #       1  蓝色 上一个位置
         #       2  蓝色 上上个位置

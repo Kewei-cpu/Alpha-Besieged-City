@@ -31,6 +31,11 @@ class PlayRobotInterface(QWidget):
         self.resign_button.clicked.connect(self.board_widget.onResign)
         self.left_layout.addWidget(self.resign_button)
 
+        self.copy_button = PushButton(self)
+        self.copy_button.setText("Copy Position")
+        self.copy_button.clicked.connect(self.board_widget.onCopyPosition)
+        self.left_layout.addWidget(self.copy_button)
+
         self.save_button = PushButton(self)
         self.save_button.setText("Save")
         self.save_button.clicked.connect(self.board_widget.onSave)

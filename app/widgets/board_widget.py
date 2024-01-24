@@ -1,6 +1,6 @@
 from PySide6.QtCore import QPoint, Qt
 from PySide6.QtGui import QPainter, QGradient, QColor, QPen, QRadialGradient
-from PySide6.QtWidgets import QWidget
+from PySide6.QtWidgets import QWidget, QApplication
 from qfluentwidgets import InfoBar, FluentIcon, InfoBarPosition
 
 from alphazero import ChessBoard
@@ -410,7 +410,22 @@ class BoardWidget(QWidget):
 
     def onSave(self):
         ...
-        
+
+    def onCopyPosition(self):
+        clipboard = QApplication.clipboard()
+        position = str(self.board.state.tolist())
+        clipboard.setText(position)
+        InfoBar.success(
+            # icon=FluentIcon.COMPLETED,
+            title="Copied",
+            content="",
+            orient=Qt.Horizontal,
+            isClosable=True,
+            position=InfoBarPosition.BOTTOM_RIGHT,
+            duration=1000,
+            parent=self
+        )
+
         
     def onSelectRobot(self, text):
         if text == "Random":
