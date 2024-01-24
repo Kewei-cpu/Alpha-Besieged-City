@@ -4,7 +4,6 @@ from typing import Tuple, List, Any
 
 import numpy as np
 import torch
-from numba import jit
 from numpy import ndarray
 
 

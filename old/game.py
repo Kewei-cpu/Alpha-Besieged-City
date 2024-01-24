@@ -484,6 +484,6 @@ class Game:
 
 
 if __name__ == '__main__':
-    game = Game(7, 100, 50, 24,
+    game = Game(10, 80, 50, 24,
                 (None, (MaxTolerantPercentSigmoidTerritory, {"K": 2, "B": 2, "error": 0.0, "T": 0.03})))
     game.main()

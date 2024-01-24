@@ -4,6 +4,7 @@ from PySide6.QtWidgets import QWidget
 from qfluentwidgets import InfoBar, FluentIcon, InfoBarPosition
 
 from alphazero import ChessBoard
+from arena import *
 
 BLUE = (130, 175, 214)
 LIGHT_BLUE = tuple([int(255 - (255 - color) * 1) for color in BLUE])
@@ -36,6 +37,8 @@ class BoardWidget(QWidget):
         self.active_player_pos_index = 0
         self.running = True
         self.mouse_pos = (0, 0)
+        
+        self.robot = None
 
         self.blue_final_territory = []
         self.green_final_territory = []
@@ -377,8 +380,10 @@ class BoardWidget(QWidget):
         super().mousePressEvent(event)
         if not self.running: return
         action = self.mouse_pos_to_action(event.x(), event.y())
-        self.doAction(action)
+        s = self.doAction(action)
         self.update()
+        if self.robot != None and s:
+            self.robotMove()
 
     def onRestart(self):
         self.board.clear_board()
@@ -405,7 +410,18 @@ class BoardWidget(QWidget):
 
     def onSave(self):
         ...
-
+        
+        
+    def onSelectRobot(self, text):
+        if text == "Random":
+            self.robot = Random(self.board)
+        elif text == "MaxTerritory":
+            self.robot = MaxTerritory(self.board)
+        elif text == "MaxSigmoidTerritory":
+            self.robot = MaxSigmoidTerritory(self.board, K=2, B=2)
+        elif text == "MaxPercentSigmoidTerritory":
+            self.robot = MaxPercentSigmoidTerritory(self.board, K=2, B=2)
+        
     def createGameOverInfoBar(self, title, content, color):
         w = InfoBar.new(
             icon=FluentIcon.COMPLETED,
@@ -419,6 +435,7 @@ class BoardWidget(QWidget):
         )
         w.setCustomBackgroundColor(color, color)
 
+
     def doAction(self, action):
         """
         执行动作
@@ -426,7 +443,7 @@ class BoardWidget(QWidget):
         :return:
         """
         if action not in self.board.available_actions:
-            return
+            return False
         self.board.do_action(action)
         self.history.append(action)
 
@@ -441,7 +458,19 @@ class BoardWidget(QWidget):
             self.print_result()
 
         self.active_player_pos_index = 0 if self.board.state[12, 0, 0] == 0 else 3
+        return True
 
+    
+    
+    def robotMove(self):
+        if self.running == False:
+            return
+                
+        move = self.robot.play()
+        self.doAction(move)    
+        self.update()
+    
+    
     def print_result(self):
         """
         打印游戏结果
@@ -455,10 +484,10 @@ class BoardWidget(QWidget):
 
         if blue_score > green_score:
             title += "BLUE WIN!"
-            color = QColor(*BLUE)
+            color = QColor(*BLUE, 180)
         elif blue_score < green_score:
             title += "GREEN WIN!"
-            color = QColor(*GREEN)
+            color = QColor(*GREEN,180)
         else:
             title += "DRAW!"
             color = "white"
