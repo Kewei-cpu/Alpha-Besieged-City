@@ -31,6 +31,8 @@ class Window(FluentWindow):
         self.homeInterface = HomeInterface('Home Interface', self)
         self.boardInterfaceFriend = PlayFriendInterface('Player with Friends', self)
         self.boardInterfaceRobot = PlayRobotInterface('Player with Robots', self)
+        self.boardInterfaceNN = PlayNNInterface('Player with Neural Network', self)
+
         self.settingInterface = Widget('Setting Interface', self)
 
         self.initNavigation()
@@ -43,7 +45,10 @@ class Window(FluentWindow):
 
         self.addSubInterface(self.boardInterfaceFriend, FluentIcon.PEOPLE, 'Player with Friends',
                              NavigationItemPosition.SCROLL)
-        self.addSubInterface(self.boardInterfaceRobot, FluentIcon.ROBOT, 'Player with Robots', NavigationItemPosition.SCROLL)
+        self.addSubInterface(self.boardInterfaceRobot, FluentIcon.ROBOT, 'Player with Robots',
+                             NavigationItemPosition.SCROLL)
+        self.addSubInterface(self.boardInterfaceNN, FluentIcon.EDUCATION, 'Player with Neural Network',
+                             NavigationItemPosition.SCROLL)
         # add custom widget to bottom
         # self.navigationInterface.addWidget(
         #     routeKey='avatar',

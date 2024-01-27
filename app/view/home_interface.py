@@ -13,33 +13,6 @@ def isWin11():
     return sys.platform == 'win32' and sys.getwindowsversion().build >= 22000
 
 
-if isWin11():
-    pass
-else:
-    pass
-
-
-class EmojiCard(ElevatedCardWidget):
-    """ Emoji card """
-
-    def __init__(self, iconPath: str, parent=None):
-        super().__init__(parent)
-        self.iconWidget = ImageLabel(iconPath, self)
-        self.label = CaptionLabel(Path(iconPath).stem, self)
-
-        self.iconWidget.scaledToHeight(68)
-
-        self.vBoxLayout = QVBoxLayout(self)
-        self.vBoxLayout.setAlignment(Qt.AlignCenter)
-        self.vBoxLayout.addStretch(1)
-        self.vBoxLayout.addWidget(self.iconWidget, 0, Qt.AlignCenter)
-        self.vBoxLayout.addStretch(1)
-        self.vBoxLayout.addWidget(
-            self.label, 0, Qt.AlignHCenter | Qt.AlignBottom)
-
-        self.setFixedSize(168, 176)
-
-
 class StatisticsWidget(QWidget):
     """ Statistics widget """
 

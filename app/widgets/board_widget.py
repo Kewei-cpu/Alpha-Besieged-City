@@ -1,16 +1,17 @@
 from PySide6.QtCore import QPoint, Qt
 from PySide6.QtGui import QPainter, QGradient, QColor, QPen, QRadialGradient
 from PySide6.QtWidgets import QWidget, QApplication
-from qfluentwidgets import InfoBar, FluentIcon, InfoBarPosition
+from qfluentwidgets import InfoBar, FluentIcon, InfoBarPosition, StateToolTip
 
 from alphazero import ChessBoard
+from app.common.ai_thread import AIThread
 from arena import *
 
 BLUE = (130, 175, 214)
-LIGHT_BLUE = tuple([int(255 - (255 - color) * 1) for color in BLUE])
+LIGHT_BLUE = tuple([int(255 - (255 - color) * 0.7) for color in BLUE])
 DARK_BLUE = tuple([int(color * 0.7) for color in BLUE])
 GREEN = (80, 181, 142)
-LIGHT_GREEN = tuple([int(255 - (255 - color) * 0.9) for color in GREEN])
+LIGHT_GREEN = tuple([int(255 - (255 - color) * 0.5) for color in GREEN])
 DARK_GREEN = tuple([int(color * 0.7) for color in GREEN])
 
 WHITE = (255, 255, 255)
@@ -37,8 +38,13 @@ class BoardWidget(QWidget):
         self.active_player_pos_index = 0
         self.running = True
         self.mouse_pos = (0, 0)
-        
+
         self.robot = None
+
+        self.enable_NN = False
+        self.aiThread = None
+        self.isAIThinking = False
+        self.stateTooltip = None
 
         self.blue_final_territory = []
         self.green_final_territory = []
@@ -70,7 +76,9 @@ class BoardWidget(QWidget):
             self.drawAvailablePositions(painter)
             self.drawPlayers(painter)
             self.drawActivePlayer(painter)
-            self.drawActionPreview(painter)
+
+            if not self.isAIThinking:
+                self.drawActionPreview(painter)
         else:
             self.drawFinalTerritory(painter)
             self.drawDeadPlayer(painter)
@@ -214,7 +222,7 @@ class BoardWidget(QWidget):
         """
 
         available_positions = []
-        light_color = BLUE if self.board.state[12, 0, 0] == 0 else LIGHT_GREEN
+        light_color = BLUE if self.board.state[12, 0, 0] == 0 else GREEN
 
         for action in self.board.available_actions:
             pos = (
@@ -371,6 +379,13 @@ class BoardWidget(QWidget):
 
         return action
 
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        if self.stateTooltip:
+            self.stateTooltip.move(self.window().width() - self.stateTooltip.width() - 75, 10)
+            self.update()
+
     def mouseMoveEvent(self, event):
         super().mouseMoveEvent(event)
         self.mouse_pos = event.x(), event.y()
@@ -378,14 +393,25 @@ class BoardWidget(QWidget):
 
     def mousePressEvent(self, event):
         super().mousePressEvent(event)
-        if not self.running: return
+        if not self.running:
+            return
+        if self.isAIThinking:
+            return
+
         action = self.mouse_pos_to_action(event.x(), event.y())
         s = self.doAction(action)
         self.update()
-        if self.robot != None and s:
-            self.robotMove()
+
+        if s and self.running:
+            if self.robot is not None:
+                self.robotMove()
+            if self.enable_NN:
+                self.nnMove()
 
     def onRestart(self):
+        if self.isAIThinking:
+            return
+
         self.board.clear_board()
         self.running = True
         self.active_player_pos_index = 0
@@ -395,6 +421,9 @@ class BoardWidget(QWidget):
         self.update()
 
     def onUndo(self):
+        if self.isAIThinking:
+            return
+
         self.board.clear_board()
         self.running = True
         self.active_player_pos_index = 0
@@ -426,7 +455,6 @@ class BoardWidget(QWidget):
             parent=self
         )
 
-        
     def onSelectRobot(self, text):
         if text == "Random":
             self.robot = Random(self.board)
@@ -436,7 +464,26 @@ class BoardWidget(QWidget):
             self.robot = MaxSigmoidTerritory(self.board, K=2, B=2)
         elif text == "MaxPercentSigmoidTerritory":
             self.robot = MaxPercentSigmoidTerritory(self.board, K=2, B=2)
-        
+
+    def onEnableNN(self):
+        self.aiThread = AIThread(
+            chessBoard=self.board,
+            model="pretrain/model/policy_value_net_100.pth",
+            c_puct=4,
+            n_iters=1500,
+            is_use_gpu=True,
+            parent=self
+        )
+        self.aiThread.searchComplete.connect(self.onSearchComplete)
+        self.enable_NN = True
+
+    def closeEvent(self, e):
+        """ 关闭界面 """
+        self.aiThread.quit()
+        self.aiThread.wait()
+        self.aiThread.deleteLater()
+        e.accept()
+
     def createGameOverInfoBar(self, title, content, color):
         w = InfoBar.new(
             icon=FluentIcon.COMPLETED,
@@ -450,7 +497,6 @@ class BoardWidget(QWidget):
         )
         w.setCustomBackgroundColor(color, color)
 
-
     def doAction(self, action):
         """
         执行动作
@@ -459,6 +505,7 @@ class BoardWidget(QWidget):
         """
         if action not in self.board.available_actions:
             return False
+
         self.board.do_action(action)
         self.history.append(action)
 
@@ -473,19 +520,45 @@ class BoardWidget(QWidget):
             self.print_result()
 
         self.active_player_pos_index = 0 if self.board.state[12, 0, 0] == 0 else 3
+
         return True
 
-    
-    
     def robotMove(self):
         if self.running == False:
             return
-                
+
         move = self.robot.play()
-        self.doAction(move)    
+        self.doAction(move)
         self.update()
-    
-    
+
+    def nnMove(self):
+        """ 获取 AI 的动作 """
+        if self.isAIThinking:
+            return
+
+        self.stateTooltip = StateToolTip(
+            title='AI is thinking',
+            content='Please wait a moment',
+            parent=self
+        )
+        self.stateTooltip.move(self.window().width() - self.stateTooltip.width() - 75, 10)
+        self.stateTooltip.raise_()
+        self.stateTooltip.show()
+
+        # self.stateTooltip.move(
+        #     self.window().width() - self.stateTooltip.width() - 63, 60)
+
+        self.isAIThinking = True
+        self.aiThread.start()
+
+    def onSearchComplete(self, action: int):
+        """ AI 思考完成槽函数 """
+        self.stateTooltip.setState(True)
+        self.isAIThinking = False
+        self.stateTooltip = None
+        self.doAction(action)
+        self.update()
+
     def print_result(self):
         """
         打印游戏结果
@@ -499,10 +572,10 @@ class BoardWidget(QWidget):
 
         if blue_score > green_score:
             title += "BLUE WIN!"
-            color = QColor(*BLUE, 180)
+            color = QColor(*LIGHT_BLUE)
         elif blue_score < green_score:
             title += "GREEN WIN!"
-            color = QColor(*GREEN,180)
+            color = QColor(*LIGHT_GREEN)
         else:
             title += "DRAW!"
             color = "white"

@@ -209,7 +209,6 @@ class TrainModel:
                 traceback.print_exc()
             pass
 
-
     @exception_handler
     def train(self):
         """ 训练模型 """
