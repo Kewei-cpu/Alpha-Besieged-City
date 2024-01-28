@@ -5,6 +5,8 @@ from qfluentwidgets import InfoBar, FluentIcon, InfoBarPosition, StateToolTip
 
 from alphazero import ChessBoard
 from app.common.ai_thread import AIThread
+from app.config import *
+
 from arena import *
 
 BLUE = (130, 175, 214)
@@ -15,6 +17,7 @@ LIGHT_GREEN = tuple([int(255 - (255 - color) * 0.5) for color in GREEN])
 DARK_GREEN = tuple([int(color * 0.7) for color in GREEN])
 
 WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
 
 
 class BoardWidget(QWidget):
@@ -84,13 +87,25 @@ class BoardWidget(QWidget):
             self.drawDeadPlayer(painter)
 
     def drawBackground(self, painter):
-        painter.setPen(QColor(*WHITE, 0))
-        painter.setBrush(QGradient(QGradient.Preset.PoliteRumors))
+        painter.setPen(Qt.NoPen)
+        grad = QGradient(eval("QGradient.Preset." + cfg.get(cfg.boardBackground).value))
+        alpha = cfg.get(cfg.boardBackgroundAlpha)
+        stops = grad.stops()
+        for stop in stops:
+            stop[1].setAlphaF(alpha / 100.0)
+        grad.setStops(stops)
+        painter.setBrush(grad)
         painter.drawRoundedRect(0, 0, self.screen_size[0], self.screen_size[1], 5, 5)
 
     def drawBoard(self, painter):
-        painter.setPen(QColor(*WHITE, 0))
-        painter.setBrush(QGradient(QGradient.Preset.SaintPetersburg))
+        painter.setPen(Qt.NoPen)
+        grad = QGradient(eval("QGradient.Preset." + cfg.get(cfg.boardGridColor).value))
+        alpha = cfg.get(cfg.boardGridAlpha)
+        stops = grad.stops()
+        for stop in stops:
+            stop[1].setAlphaF(alpha / 100.0)
+        grad.setStops(stops)
+        painter.setBrush(grad)
         for i in range(self.board_len):
             for j in range(self.board_len):
                 painter.drawRoundedRect(
@@ -109,7 +124,7 @@ class BoardWidget(QWidget):
         :return:
         """
 
-        painter.setPen(QColor(*WHITE, 0))
+        painter.setPen(Qt.NoPen)
         painter.setBrush(QGradient(QGradient.Preset.FlyHigh))
         painter.drawEllipse(
             self.margin_size[0] + (self.board.player_pos[0][1] + 0.25) * self.grid_size,
@@ -118,7 +133,7 @@ class BoardWidget(QWidget):
             self.grid_size * 0.5,
         )
 
-        painter.setPen(QColor(*WHITE, 0))
+        painter.setPen(Qt.NoPen)
         painter.setBrush(QGradient(QGradient.Preset.GrownEarly))
         painter.drawEllipse(
             self.margin_size[0] + (self.board.player_pos[1][1] + 0.25) * self.grid_size,
@@ -134,7 +149,7 @@ class BoardWidget(QWidget):
         :return:
         """
         if self.board.state[12, 0, 0] == 0:
-            painter.setPen(QColor(*WHITE, 0))
+            painter.setPen(Qt.NoPen)
             painter.setBrush(QGradient(QGradient.Preset.Seashore))
             painter.drawEllipse(
                 self.margin_size[0] + (self.board.player_pos[0][1] + 0.25) * self.grid_size,
@@ -144,7 +159,7 @@ class BoardWidget(QWidget):
             )
 
         else:
-            painter.setPen(QColor(*WHITE, 0))
+            painter.setPen(Qt.NoPen)
             painter.setBrush(QGradient(QGradient.Preset.NewLife))
             painter.drawEllipse(
                 self.margin_size[0] + (self.board.player_pos[1][1] + 0.25) * self.grid_size,
@@ -205,7 +220,7 @@ class BoardWidget(QWidget):
         elif wall == 3:
             self.drawVerticalWall(painter, active_player_color, destination[0], destination[1])
 
-        painter.setPen(QColor(*WHITE, 0))
+        painter.setPen(Qt.NoPen)
         painter.setBrush(QColor(*active_player_color, 180))
         painter.drawEllipse(
             self.margin_size[0] + (destination[1] + 0.25) * self.grid_size,
@@ -246,7 +261,7 @@ class BoardWidget(QWidget):
 
             grad.setColorAt(0, QColor(*light_color, 0))
             grad.setColorAt(1, QColor(*light_color, 180))
-            painter.setPen(QColor(*WHITE, 0))
+            painter.setPen(Qt.NoPen)
             painter.setBrush(grad)
             painter.drawRoundedRect(
                 self.margin_size[0] + pos[1] * self.grid_size + self.padding_size / 2,
@@ -288,12 +303,17 @@ class BoardWidget(QWidget):
         :param scr: 屏幕
         :return:
         """
+        if cfg.get(cfg.boardGridColor) in (BoardGridColorEnum.SaintPetersburg, BoardGridColorEnum.HeavyRain):
+            color = WHITE
+        else:
+            color = BLACK
+
         for i in range(self.board_len):
             for j in range(self.board_len):
                 if self.board.state[6, i, j] == 1:
-                    self.drawHorizontalWall(painter, WHITE, i, j)
+                    self.drawHorizontalWall(painter, color, i, j)
                 if self.board.state[9, i, j] == 1:
-                    self.drawVerticalWall(painter, WHITE, i, j)
+                    self.drawVerticalWall(painter, color, i, j)
 
     def drawHorizontalWall(self, painter: QPainter, color, pos_y, pos_x, width=0):
         """
@@ -305,7 +325,7 @@ class BoardWidget(QWidget):
         :param width: 外框宽度 0为填充
         :return:
         """
-        painter.setPen(QColor(*WHITE, 0))
+        painter.setPen(Qt.NoPen)
         painter.setBrush(QColor(*color, 180))
         painter.drawPolygon(
             (QPoint(self.margin_size[0] + pos_x * self.grid_size,
@@ -333,7 +353,7 @@ class BoardWidget(QWidget):
         :return:
         """
 
-        painter.setPen(QColor(*WHITE, 0))
+        painter.setPen(Qt.NoPen)
         painter.setBrush(QColor(*color, 180))
         painter.drawPolygon(
             (QPoint(self.margin_size[0] + (pos_x + 1) * self.grid_size,
@@ -470,15 +490,23 @@ class BoardWidget(QWidget):
     def onEnableNN(self):
         self.aiThread = AIThread(
             chessBoard=self.board,
-            # model="pretrain/model/policy_value_net_100.pth",
-            model="",
-            c_puct=4,
-            n_iters=10000,
-            is_use_gpu=True,
+            parent=self
+        )
+        self.parent().parent().settingInterface.MCTSRefreshSignal.connect(self.onRefreshMCTS)
+        self.aiThread.searchComplete.connect(self.onSearchComplete)
+        self.enable_NN = True
+
+    def onRefreshMCTS(self):
+        if self.isAIThinking:
+            return
+        if not self.enable_NN:
+            return
+
+        self.aiThread = AIThread(
+            chessBoard=self.board,
             parent=self
         )
         self.aiThread.searchComplete.connect(self.onSearchComplete)
-        self.enable_NN = True
 
     def closeEvent(self, e):
         """ 关闭界面 """

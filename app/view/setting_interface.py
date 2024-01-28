@@ -1,142 +1,195 @@
 # coding: utf-8
-import os
 
-from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QLabel, QWidget
-from qfluentwidgets import *
+from PySide6.QtCore import Qt, Signal
+from PySide6.QtWidgets import QWidget, QFileDialog
+from qfluentwidgets import (SettingCardGroup, SwitchSettingCard, OptionsSettingCard, RangeSettingCard, PushSettingCard,
+                            ColorSettingCard, ScrollArea,
+                            ExpandLayout, Theme, InfoBar, setTheme, FluentIcon, TitleLabel)
+
+from app.config import *
+
+
 
 
 class SettingInterface(ScrollArea):
     enableAcrylicChanged = Signal(bool)
+    MCTSRefreshSignal = Signal()
 
     def __init__(self, text, parent=None):
         super().__init__(parent=parent)
 
         self.setObjectName(text.replace(' ', '-'))
 
-        # 默认配置
-        self.config = {
-            "c_puct": 4,
-            "is_use_gpu": True,
-            "n_mcts_iters": 1500,
-            "is_human_first": True,
-            "is_enable_acrylic": True,
-            "model": "model/history/best_policy_value_net_4400.pth"
-        }
-        # 读入用户配置
-        self.__readConfig()
+        self.scrollWidget = QWidget(self)
 
-        self.view = QWidget(self)
+        self.expandLayout = ExpandLayout(self.scrollWidget)
 
-        self.expandLayout = ExpandLayout(self.view)
+        self.settingsLabel = TitleLabel('Settings', self.scrollWidget)
+        self.settingsLabel.setFixedHeight(40)
 
-        self.settingsLabel = TitleLabel('Settings', self.view)
-        self.settingsLabel.setFixedHeight(80)
-        # self.settingsLabel.setObjectName('settingLabel')
+        self.AppearanceGroup = SettingCardGroup("Appearance", self.scrollWidget)
 
-        self.musicInThisPCGroup = SettingCardGroup(
-            "Alpha Besieged City on this PC", self.view)
-
-        self.downloadFolderCard = PushSettingCard(
-            'Choose folder',
-            FluentIcon.DOWNLOAD,
-            "Model directory",
-            '123',
-            self.musicInThisPCGroup
+        self.themeModeCard = OptionsSettingCard(
+            cfg.themeMode,
+            FluentIcon.BRUSH,
+            "Application Theme",
+            "Change the appearance of your application",
+            texts=['Light', 'Dark', 'Use system setting'],
+            parent=self.AppearanceGroup,
+        )
+        self.themeColorCard = ColorSettingCard(
+            cfg.themeColor,
+            FluentIcon.PALETTE,
+            "Theme Color",
+            "Change the theme color of you application",
+            parent=self.AppearanceGroup,
+        )
+        self.boardBackgroundColorCard = OptionsSettingCard(
+            cfg.boardBackground,
+            FluentIcon.PALETTE,
+            "Board Background Color",
+            "Change the background of the board",
+            texts=BoardBackgroundColorEnum.values(),
+            parent=self.AppearanceGroup,
+        )
+        self.boardBackgroundAlphaCard = RangeSettingCard(
+            cfg.boardBackgroundAlpha,
+            FluentIcon.SETTING,
+            "Board Background Opacity",
+            "Change the opacity of the board background",
+            parent=self.AppearanceGroup
+        )
+        self.boardGridColorCard = OptionsSettingCard(
+            cfg.boardGridColor,
+            FluentIcon.PALETTE,
+            "Board Grid Color",
+            "Change the grid color of the board",
+            texts=BoardGridColorEnum.values(),
+            parent=self.AppearanceGroup,
+        )
+        self.boardGridAlphaCard = RangeSettingCard(
+            cfg.boardGridAlpha,
+            FluentIcon.SETTING,
+            "Board Grid Opacity",
+            "Change the opacity of the board gird",
+            parent=self.AppearanceGroup
         )
 
-        self.MCTSGroup = SettingCardGroup(
-            "MCTS", self.view)
+        self.AppearanceGroup.addSettingCard(self.themeModeCard)
+        self.AppearanceGroup.addSettingCard(self.themeColorCard)
+        self.AppearanceGroup.addSettingCard(self.boardBackgroundColorCard)
+        self.AppearanceGroup.addSettingCard(self.boardBackgroundAlphaCard)
+        self.AppearanceGroup.addSettingCard(self.boardGridColorCard)
+        self.AppearanceGroup.addSettingCard(self.boardGridAlphaCard)
 
-        # self.cPuctCard = RangeSettingCard(
-        #     'Exploration constant',
-        #     FluentIcon.SETTING,
-        #     'c_puct',
-        #     self.config['c_puct'].__str__(),
-        #     self.MCTSGroup
-        # )
+        self.musicInThisPCGroup = SettingCardGroup("Alpha Besieged City on this PC", self.scrollWidget)
 
+        self.modelFolderCard = PushSettingCard(
+            "Choose Folder",
+            FluentIcon.FOLDER,
+            "Model directory",
+            cfg.get(cfg.modelPath),
+            parent=self.musicInThisPCGroup
+        )
 
+        self.musicInThisPCGroup.addSettingCard(self.modelFolderCard)
 
+        self.MCTSGroup = SettingCardGroup("MCTS", self.scrollWidget)
 
-        self.musicInThisPCGroup.addSettingCard(self.downloadFolderCard)
+        self.cPuctCard = RangeSettingCard(
+            cfg.cPuct,
+            FluentIcon.SETTING,
+            "Exploration Constant",
+            parent=self.MCTSGroup,
+        )
 
+        self.numIterCard = RangeSettingCard(
+            cfg.numIter,
+            FluentIcon.SETTING,
+            "Iteration Times",
+            parent=self.MCTSGroup,
+        )
 
+        self.useGPUCard = SwitchSettingCard(
+            FluentIcon.SPEED_HIGH,
+            "Use GPU as Accelerator",
+            "Using GPU can speed up the thinking of Alpha Gobang (if available)",
+            cfg.useGPU,
+            parent=self.MCTSGroup,
+        )
+
+        self.MCTSGroup.addSettingCard(self.cPuctCard)
+        self.MCTSGroup.addSettingCard(self.numIterCard)
+        self.MCTSGroup.addSettingCard(self.useGPUCard)
 
         self.expandLayout.setSpacing(28)
-        self.expandLayout.setContentsMargins(20, 20, 20, 30)
+        self.expandLayout.setContentsMargins(20, 10, 20, 20)
 
         self.expandLayout.addWidget(self.settingsLabel)
+        self.expandLayout.addWidget(self.AppearanceGroup)
         self.expandLayout.addWidget(self.musicInThisPCGroup)
+        self.expandLayout.addWidget(self.MCTSGroup)
 
         self.resize(1200, 800)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.setViewportMargins(0, 120, 0, 20)
-        self.setWidget(self.view)
+        self.setViewportMargins(0, 0, 0, 20)
+        self.setWidget(self.scrollWidget)
         self.setWidgetResizable(True)
 
         self.__setQss()
+        self.__connectSignalToSlot()
+
+    def __connectSignalToSlot(self):
+        """ connect signal to slot """
+        cfg.appRestartSig.connect(self.__showRestartTooltip)
+        cfg.themeChanged.connect(self.__onThemeChanged)
+
+        self.modelFolderCard.clicked.connect(self.__onModelFolderCardClicked)
+        self.cPuctCard.valueChanged.connect(self.__onMCTSChanged)
+        self.numIterCard.valueChanged.connect(self.__onMCTSChanged)
+        self.useGPUCard.checkedChanged.connect(self.__onMCTSChanged)
+
+        self.cPuctCard.slider.sliderReleased.connect(self.__showSuccessTooltip)
+        self.numIterCard.slider.sliderReleased.connect(self.__showSuccessTooltip)
+        self.useGPUCard.checkedChanged.connect(self.__showSuccessTooltip)
 
     def __setQss(self):
         """ set style sheet """
         self.setStyleSheet("QScrollArea {border: none; background:transparent}")
-        self.view.setStyleSheet(
+        self.scrollWidget.setStyleSheet(
             "QWidget {background:transparent} QLabel#settingLabel { font: 33px 'Microsoft YaHei Light'}")
 
-    def __readConfig(self):
-        """ 读入配置 """
-        self.__checkDir()
-        try:
-            with open('app/config/config.json', encoding='utf-8') as f:
-                self.config.update(json.load(f))
-        except:
-            pass
+    def __showRestartTooltip(self):
+        """ show restart tooltip """
+        InfoBar.warning(
+            '',
+            'Configuration takes effect after restart',
+            parent=self.window()
+        )
 
-    def __checkDir(self):
-        """ 检查配置文件夹是否存在 """
-        if not os.path.exists('app/config'):
-            os.mkdir('app/config')
+    def __showSuccessTooltip(self):
+        InfoBar.success(
+            'Settings Applied',
+            'Configuration has taken effect',
+            parent=self.window()
+        )
 
-    def __showSelectModelDialog(self):
-        """ 显示选择模型对话框 """
-        w = SelectModelDialog(self.config['model'], self.window())
-        w.modelChangedSignal.connect(self.__onModelChanged)
-        w.exec_()
+    def __onThemeChanged(self, theme: Theme):
+        """ theme changed slot """
+        # change the theme of qfluentwidgets
+        setTheme(theme)
 
-    def __onModelChanged(self, model: str):
-        """ 模型改变信号槽函数 """
-        if model != self.config['model']:
-            self.config['model'] = model
+    def __onModelFolderCardClicked(self):
+        """ download path card clicked slot """
+        path = QFileDialog.getOpenFileName(
+            self, "Choose Model File", "./", "Model (*.pth)")
+        if not path[0] or cfg.get(cfg.modelPath) == path:
+            return
 
-    def __onEnableAcrylicChanged(self, isEnableAcrylic: bool):
-        """ 使用亚克力背景开关按钮的开关状态变化槽函数 """
-        self.config['is_enable_acrylic'] = isEnableAcrylic
-        self.acrylicSwitchButton.setText(
-            'On' if isEnableAcrylic else 'Off')
-        self.enableAcrylicChanged.emit(isEnableAcrylic)
+        cfg.set(cfg.modelPath, path[0])
+        self.modelFolderCard.setContent(path[0])
+        self.__onMCTSChanged()
+        self.__showSuccessTooltip()
 
-    def __onUseGPUChanged(self, isUseGPU: bool):
-        """ 使用 GPU 加速开关按钮的开关状态改变槽函数 """
-        self.config['is_use_gpu'] = isUseGPU
-        self.useGPUSwitchButton.setText(
-            'On' if isUseGPU else 'Off')
-
-    def __onFirstHandChanged(self):
-        """ 先手改变 """
-        self.config['is_human_first'] = self.humanButton.isChecked()
-
-    def __onCPuctChanged(self, cPuct: float):
-        """ 调整探索常数槽函数 """
-        self.config['c_puct'] = cPuct / 10
-        self.cPuctValueLabel.setText(str(cPuct / 10))
-
-    def __onMctsIterTimesChanged(self, iterTime: int):
-        """ 调整蒙特卡洛树搜索次数槽函数 """
-        self.config['n_mcts_iters'] = iterTime
-        self.mctsIterTimeValueLabel.setNum(iterTime)
-
-    def saveConfig(self):
-        """ 保存设置 """
-        self.__checkDir()
-        with open('app/config/config.json', 'w', encoding='utf-8') as f:
-            json.dump(self.config, f)
+    def __onMCTSChanged(self):
+        self.MCTSRefreshSignal.emit()

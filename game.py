@@ -29,10 +29,10 @@ class Window(FluentWindow):
 
         # create sub interface
         self.homeInterface = HomeInterface('Home Interface', self)
+        self.settingInterface = SettingInterface('Setting Interface', self)
         self.boardInterfaceFriend = PlayFriendInterface('Player with Friends', self)
         self.boardInterfaceRobot = PlayRobotInterface('Player with Robots', self)
         self.boardInterfaceNN = PlayNNInterface('Player with Neural Network', self)
-        self.settingInterface = SettingInterface('Setting Interface', self)
 
         self.initNavigation()
         self.initWindow()
