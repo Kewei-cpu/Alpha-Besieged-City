@@ -1,20 +1,20 @@
 {
     "Board": {
         "BackgroundColor": "SunnyMorning",
-        "BackgroundAlpha": 19,
-        "GridAlpha": 25,
+        "BackgroundAlpha": 20,
+        "GridAlpha": 20,
         "GridColor": "MidnightBloom"
     },
     "MonteCarloTree": {
         "CPuct": 4,
-        "NumIter": 100,
+        "NumIter": 4969,
         "UseGPU": true
     },
     "Model": {
         "ModelPath": "download"
     },
     "QFluentWidgets": {
-        "ThemeColor": "#ff009faa",
+        "ThemeColor": "#ffdb4fbf",
         "ThemeMode": "Auto"
     }
 }

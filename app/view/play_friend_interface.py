@@ -26,11 +26,6 @@ class PlayFriendInterface(QWidget):
         self.undo_button.clicked.connect(self.board_widget.onUndo)
         self.left_layout.addWidget(self.undo_button)
 
-        self.resign_button = PushButton(self)
-        self.resign_button.setText("Resign")
-        self.resign_button.clicked.connect(self.board_widget.onResign)
-        self.left_layout.addWidget(self.resign_button)
-
         self.copy_button = PushButton(self)
         self.copy_button.setText("Copy Position")
         self.copy_button.clicked.connect(self.board_widget.onCopyPosition)

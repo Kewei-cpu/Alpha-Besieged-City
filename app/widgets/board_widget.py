@@ -1,7 +1,11 @@
+import json
+import os
+import time
+
 from PySide6.QtCore import QPoint, Qt
 from PySide6.QtGui import QPainter, QGradient, QColor, QPen, QRadialGradient
 from PySide6.QtWidgets import QWidget, QApplication
-from qfluentwidgets import InfoBar, FluentIcon, InfoBarPosition, StateToolTip
+from qfluentwidgets import InfoBar, FluentIcon, InfoBarPosition, StateToolTip, Dialog
 
 from alphazero import ChessBoard
 from app.common.ai_thread import AIThread
@@ -373,7 +377,8 @@ class BoardWidget(QWidget):
     def mouse_pos_to_action(self, mouse_pos_x, mouse_pos_y):
         """
         将鼠标位置转换为动作
-        :param mouse_pos: 鼠标位置
+        :param mouse_pos_y: 鼠标位置 y
+        :param mouse_pos_x: 鼠标位置 x
         :return: 动作（0-99整数）
         """
 
@@ -398,7 +403,6 @@ class BoardWidget(QWidget):
             return None
 
         return action
-
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
@@ -454,11 +458,41 @@ class BoardWidget(QWidget):
         self.history = self.history[:-1]
         self.update()
 
-    def onResign(self):
-        ...
-
     def onSave(self):
-        ...
+        if not self.history:
+            InfoBar.error(
+                title="Save Failed",
+                content="Can't save empty game!",
+                parent=self)
+            return
+
+        os.makedirs('./log/board', exist_ok=True)
+        t = time.strftime('%Y-%m-%d_%H-%M-%S', time.localtime(time.time()))
+        is_over, winner = self.board.is_game_over()
+        if is_over:
+            if winner == 0:
+                result = "Blue Win"
+            elif winner == 1:
+                result = "Green Win"
+            else:
+                result = "Draw"
+        else:
+            result = "Unfinished"
+
+        with open(f'./log/board/game_{t}.json', 'w', encoding='utf-8') as f:
+            game_dict = {
+                "Time": t,
+                "Moves": self.history,
+                "Move Count": len(self.history),
+                "Result": result
+            }
+            json.dump(game_dict, f)
+
+        InfoBar.success(
+            title="Game Saved",
+            content=f"Game saved to log/board/",
+            parent=self,
+        )
 
     def onCopyPosition(self):
         clipboard = QApplication.clipboard()
