@@ -1,5 +1,6 @@
 # coding: utf-8
 import random
+
 import numpy as np
 
 from .chess_board import ChessBoard
@@ -49,10 +50,10 @@ class RolloutMCTS:
             # 模拟
             value = self.__rollout(board)
             # 反向传播
-            node.backup(-1*value)
+            node.backup(-value)
 
         # 根据子节点的访问次数来选择动作
-        action = max(self.root.children.items(), key=lambda i: i[1].N)[0]
+        action = max(self.root.children.items(), key=lambda x: x[1].N)[0]
         # 更新根节点
         self.root = Node(prior_prob=1)
         return action
@@ -72,7 +73,7 @@ class RolloutMCTS:
 
     def __rollout(self, board: ChessBoard):
         """ 快速走棋，模拟一局 """
-        current_player = board.current_player
+        current_player = board.state[12, 0, 0]
 
         while True:
             is_over, winner = board.is_game_over()

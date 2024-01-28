@@ -32,8 +32,7 @@ class Window(FluentWindow):
         self.boardInterfaceFriend = PlayFriendInterface('Player with Friends', self)
         self.boardInterfaceRobot = PlayRobotInterface('Player with Robots', self)
         self.boardInterfaceNN = PlayNNInterface('Player with Neural Network', self)
-
-        self.settingInterface = Widget('Setting Interface', self)
+        self.settingInterface = SettingInterface('Setting Interface', self)
 
         self.initNavigation()
         self.initWindow()

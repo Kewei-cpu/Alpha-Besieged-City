@@ -27,11 +27,11 @@ from arena import *
 
 if __name__ == "__main__":
 
-    r = [MaxPercentSigmoidTerritory, MaxPercentSigmoidTerritory]
-    p = [{'K': 2, 'B': 2, 'error': 0.1}, {'K': 3, 'B': 1, 'error': 0.1}]
+    r = [MaxPercentSigmoidTerritory, Random]
+    p = [{'K': 2, 'B': 2, 'error': 0.0}, {}]
 
     arena = Arena(robots=r, param_list=p)
-    history = arena.match(N=10000)
+    history = arena.match(N=25000, elo=False)
 
     os.makedirs('../log/arena', exist_ok=True)
 

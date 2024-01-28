@@ -39,7 +39,7 @@ def get_data(data_path, board_len=7):
     """
 
     with open(data_path, 'r', encoding='utf-8') as f:
-        history = json.load(f)[:1000]
+        history = json.load(f)
 
     X = []
     Y1 = []
@@ -84,7 +84,7 @@ def get_data(data_path, board_len=7):
 
 
 if __name__ == '__main__':
-    feature_planes_list, pi_list, z_list = get_data(r'./data/match_history_max_vs_max.json')
+    feature_planes_list, pi_list, z_list = get_data(r'./data/match_history_maxrand_25k.json')
     data_deque = []
 
     for z, pi, feature_planes in tqdm(zip(z_list, pi_list, feature_planes_list), ncols=80, desc="Expanding data"):
@@ -103,4 +103,6 @@ if __name__ == '__main__':
 
         data_deque.append((flip_features, flip_pi, z))
 
-    torch.save(data_deque, './data/maxmax_data_60k.pth')
+    print(len(data_deque))
+
+    torch.save(data_deque, './data/maxrand_data_650k.pth')

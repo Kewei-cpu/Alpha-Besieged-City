@@ -40,8 +40,7 @@ class PlayRobotInterface(QWidget):
         self.save_button.setText("Save")
         self.save_button.clicked.connect(self.board_widget.onSave)
         self.left_layout.addWidget(self.save_button)
-        
-        
+
         self.save_button = PushButton(self)
         self.save_button.setText("Robot Move")
         self.save_button.clicked.connect(self.board_widget.robotMove)
@@ -50,7 +49,8 @@ class PlayRobotInterface(QWidget):
         self.select_robot = ComboBox(self)
         self.select_robot.setPlaceholderText("Choose a Robot")
 
-        items = ['Random', 'MaxTerritory', 'MaxSigmoidTerritory', 'MaxPercentSigmoidTerritory']
+        items = ['Random', 'MaxTerritory', 'MaxSigmoidTerritory', 'MaxDiffSigmoidTerritory',
+                 'MaxPercentSigmoidTerritory']
         self.select_robot.addItems(items)
         self.select_robot.setCurrentIndex(-1)
 

@@ -1,12 +1,10 @@
 # coding:utf-8
 import sys
-from pathlib import Path
 
-from PySide6.QtCore import Qt, QPoint, QSize, QUrl, QRect, QPropertyAnimation
-from PySide6.QtGui import QFont, QColor, QPainter
-from PySide6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QGraphicsOpacityEffect
+from PySide6.QtCore import Qt, QUrl
+from PySide6.QtGui import QFont
+from PySide6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout
 from qfluentwidgets import *
-from qfluentwidgets.components.widgets.acrylic_label import AcrylicBrush
 
 
 def isWin11():
@@ -41,7 +39,8 @@ class AppInfoCard(SimpleCardWidget):
         self.iconLabel.scaledToWidth(160)
 
         self.nameLabel = TitleLabel('Alpha Besieged City', self)
-        self.installButton = HyperlinkButton('https://github.com/Kewei-cpu/Alpha-Besieged-City', 'Github Page', self, FluentIcon.GITHUB)
+        self.installButton = HyperlinkButton('https://github.com/Kewei-cpu/Alpha-Besieged-City', 'Github Page', self,
+                                             FluentIcon.GITHUB)
         self.companyLabel = HyperlinkLabel(
             QUrl('https://github.com/Kewei-cpu'), 'Keweijun', self)
         self.installButton.setFixedWidth(160)
@@ -170,32 +169,6 @@ class DescriptionCard(HeaderCardWidget):
         self.viewLayout.addLayout(self.contentLayout)
 
 
-class SystemRequirementCard(HeaderCardWidget):
-    """ System requirements card """
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.setTitle('系统要求')
-        self.infoLabel = BodyLabel('此产品适用于你的设备。具有复选标记的项目符合开发人员的系统要求。', self)
-        self.successIcon = IconWidget(InfoBarIcon.SUCCESS, self)
-        self.detailButton = HyperlinkLabel('详细信息', self)
-
-        self.vBoxLayout = QVBoxLayout()
-        self.hBoxLayout = QHBoxLayout()
-
-        self.successIcon.setFixedSize(16, 16)
-        self.hBoxLayout.setSpacing(10)
-        self.vBoxLayout.setSpacing(16)
-        self.hBoxLayout.setContentsMargins(0, 0, 0, 0)
-        self.vBoxLayout.setContentsMargins(0, 0, 0, 0)
-
-        self.hBoxLayout.addWidget(self.successIcon)
-        self.hBoxLayout.addWidget(self.infoLabel)
-        self.vBoxLayout.addLayout(self.hBoxLayout)
-        self.vBoxLayout.addWidget(self.detailButton)
-
-        self.viewLayout.addLayout(self.vBoxLayout)
-
 
 class HomeInterface(SingleDirectionScrollArea):
 
@@ -210,10 +183,6 @@ class HomeInterface(SingleDirectionScrollArea):
         self.descriptionCard = DescriptionCard(self)
         # self.systemCard = SystemRequirementCard(self)
 
-        # self.lightBox = LightBox(self)
-        # self.lightBox.hide()
-        # self.galleryCard.flipView.itemClicked.connect(self.showLightBox)
-
         self.setWidget(self.view)
         self.setWidgetResizable(True)
         self.setObjectName(text)
@@ -221,14 +190,7 @@ class HomeInterface(SingleDirectionScrollArea):
         self.vBoxLayout.setSpacing(10)
         self.vBoxLayout.setContentsMargins(10, 10, 10, 30)
         self.vBoxLayout.addWidget(self.appCard, 0, Qt.AlignTop)
-        # self.vBoxLayout.addWidget(self.galleryCard, 0, Qt.AlignTop)
         self.vBoxLayout.addWidget(self.descriptionCard, 0, Qt.AlignTop)
-        # self.vBoxLayout.addWidget(self.systemCard, 0, Qt.AlignTop)
 
         self.setStyleSheet("QScrollArea {border: none; background:transparent}")
         self.view.setStyleSheet('QWidget {background:transparent}')
-
-
-    def resizeEvent(self, e):
-        super().resizeEvent(e)
-

@@ -1,12 +1,12 @@
 # coding: utf-8
 from math import sqrt
-from typing import Tuple, Iterable, Dict
+from typing import Tuple, Iterable, Dict, Optional
 
 
 class Node:
     """ 蒙特卡洛树节点 """
 
-    def __init__(self, prior_prob: float, c_puct: float = 5, parent=None):
+    def __init__(self, prior_prob: float, c_puct: float = 5, parent: Optional["Node"] = None):
         """
         Parameters
         ----------
@@ -16,7 +16,7 @@ class Node:
         c_puct: float
             探索常数
 
-        parent: Node
+        parent: Optional[Node]
             父级节点
         """
         self.Q = 0
@@ -61,7 +61,7 @@ class Node:
         value: float
             用来更新节点内部数据
         """
-        self.Q = (self.N * self.Q + value)/(self.N + 1)
+        self.Q = (self.N * self.Q + value) / (self.N + 1)
         self.N += 1
 
     def backup(self, value: float):
@@ -73,7 +73,7 @@ class Node:
 
     def get_score(self):
         """ 计算节点得分 """
-        self.U = self.c_puct * self.P * sqrt(self.parent.N)/(1 + self.N)
+        self.U = self.c_puct * self.P * sqrt(self.parent.N) / (1 + self.N)
         self.score = self.U + self.Q
         return self.score
 

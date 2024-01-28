@@ -462,15 +462,18 @@ class BoardWidget(QWidget):
             self.robot = MaxTerritory(self.board)
         elif text == "MaxSigmoidTerritory":
             self.robot = MaxSigmoidTerritory(self.board, K=2, B=2)
+        elif text == "MaxDiffSigmoidTerritory":
+            self.robot = MaxDiffSigmoidTerritory(self.board, K=2, B=2)
         elif text == "MaxPercentSigmoidTerritory":
             self.robot = MaxPercentSigmoidTerritory(self.board, K=2, B=2)
 
     def onEnableNN(self):
         self.aiThread = AIThread(
             chessBoard=self.board,
-            model="pretrain/model/policy_value_net_100.pth",
+            # model="pretrain/model/policy_value_net_100.pth",
+            model="",
             c_puct=4,
-            n_iters=1500,
+            n_iters=10000,
             is_use_gpu=True,
             parent=self
         )
@@ -544,9 +547,6 @@ class BoardWidget(QWidget):
         self.stateTooltip.move(self.window().width() - self.stateTooltip.width() - 75, 10)
         self.stateTooltip.raise_()
         self.stateTooltip.show()
-
-        # self.stateTooltip.move(
-        #     self.window().width() - self.stateTooltip.width() - 63, 60)
 
         self.isAIThinking = True
         self.aiThread.start()

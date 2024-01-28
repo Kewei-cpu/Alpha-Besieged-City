@@ -2,7 +2,7 @@
 import torch
 from PySide6.QtCore import QThread, Signal
 
-from alphazero import AlphaZeroMCTS, PolicyValueNet, RolloutMCTS
+from alphazero import AlphaZeroMCTS, PolicyValueNet, RolloutMCTS, TerritoryMCTS
 from app.common.model_utils import testModel
 
 
@@ -39,6 +39,8 @@ class AIThread(QThread):
         self.n_iters = n_iters
         self.isUseGPU = is_use_gpu
         self.device = torch.device('cuda:0' if self.isUseGPU else 'cpu')
+        self.model = None
+        self.mcts = None
         self.setModel(model)
 
     def run(self):
@@ -69,4 +71,4 @@ class AIThread(QThread):
             self.mcts = AlphaZeroMCTS(self.model, self.c_puct, self.n_iters)
         else:
             self.model = None
-            self.mcts = RolloutMCTS(self.c_puct, self.n_iters)
+            self.mcts = TerritoryMCTS(self.c_puct, self.n_iters)
