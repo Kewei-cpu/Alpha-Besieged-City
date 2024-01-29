@@ -37,7 +37,7 @@ class Config(QConfig):
 
 
     cPuct = RangeConfigItem(
-        "MonteCarloTree", "CPuct", 4, RangeValidator(4, 10))
+        "MonteCarloTree", "CPuct", 4, RangeValidator(0, 10))
     numIter = RangeConfigItem(
         "MonteCarloTree", "NumIter", 1000, RangeValidator(100, 10000))
     useGPU = ConfigItem(
