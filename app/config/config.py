@@ -37,7 +37,7 @@ class Config(QConfig):
 
 
     cPuct = RangeConfigItem(
-        "MonteCarloTree", "CPuct", 4, RangeValidator(4, 10))
+        "MonteCarloTree", "CPuct", 4, RangeValidator(0, 10))
     numIter = RangeConfigItem(
         "MonteCarloTree", "NumIter", 1000, RangeValidator(100, 10000))
     useGPU = ConfigItem(
@@ -72,4 +72,4 @@ FEEDBACK_URL = "https://github.com/kewei-cpu/Alpha-Besieged-City/issues"
 RELEASE_URL = "https://github.com/kewei-cpu/Alpha-Besieged-City/releases/latest"
 
 cfg = Config()
-qconfig.load('app/config/config.json', cfg)
+qconfig.load('config/config.json', cfg)

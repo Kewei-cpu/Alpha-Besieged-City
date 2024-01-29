@@ -498,7 +498,7 @@ class BoardWidget(QWidget):
                 parent=self)
             return
 
-        os.makedirs('./log/board', exist_ok=True)
+        os.makedirs('./games', exist_ok=True)
         t = time.strftime('%Y-%m-%d_%H-%M-%S', time.localtime(time.time()))
         is_over, winner = self.board.is_game_over()
         if is_over:
@@ -511,7 +511,7 @@ class BoardWidget(QWidget):
         else:
             result = "Unfinished"
 
-        with open(f'./log/board/game_{t}.abc', 'w', encoding='utf-8') as f:
+        with open(f'./games/game_{t}.abc', 'w', encoding='utf-8') as f:
             game_dict = {
                 "Time": t,
                 "Moves": self.history,
@@ -531,7 +531,7 @@ class BoardWidget(QWidget):
             return
 
         path = QFileDialog.getOpenFileName(
-            self, "Choose Game File", "log/board", "Alpha Besieged City Game (*.abc)")
+            self, "Choose Game File", "games", "Alpha Besieged City Game (*.abc)")
 
         if not path[0]:
             return
@@ -554,20 +554,7 @@ class BoardWidget(QWidget):
                     duration=2000,
                     parent=self,
                 )
-    def onCopyPosition(self):
-        clipboard = QApplication.clipboard()
-        position = str(self.board.state.tolist())
-        clipboard.setText(position)
-        InfoBar.success(
-            # icon=FluentIcon.COMPLETED,
-            title="Copied",
-            content="",
-            orient=Qt.Horizontal,
-            isClosable=True,
-            position=InfoBarPosition.BOTTOM_RIGHT,
-            duration=1000,
-            parent=self
-        )
+
 
     def onSelectRobot(self, text):
         if text == "Random":
