@@ -61,7 +61,7 @@ class Window(FluentWindow):
     def initWindow(self):
 
         self.resize(900, 700)
-        self.setWindowIcon(QIcon('resources/icon/BesiegedCityIcon.png'))
+        self.setWindowIcon(QIcon('resources/icon/icon.png'))
         self.setWindowTitle('Alpha Besieged City')
 
         desktop = QApplication.screens()[0].availableGeometry()

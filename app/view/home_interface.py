@@ -34,7 +34,7 @@ class AppInfoCard(SimpleCardWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.iconLabel = ImageLabel("resources/icon/BesiegedCityIcon.png", self)
+        self.iconLabel = ImageLabel("resources/icon/icon.png", self)
         self.iconLabel.scaledToWidth(160)
 
         self.nameLabel = TitleLabel('Alpha Besieged City', self)
