@@ -1,8 +1,3 @@
-import random
-import time
-
-import numpy as np
-
 from alphazero.chess_board import ChessBoard
 
 if __name__ == '__main__':

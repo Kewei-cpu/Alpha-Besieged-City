@@ -1,13 +1,11 @@
+import cProfile
+import pstats
 import random
-import timeit
+from io import StringIO
 
 import numpy as np
 
 from alphazero import ChessBoard
-import cProfile
-import pstats
-from io import StringIO
-
 
 N = 1000
 def main():

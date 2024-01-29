@@ -7,8 +7,9 @@ from torch.utils.data import DataLoader, Dataset
 from tqdm import tqdm
 
 from alphazero import PolicyValueNet, ChessBoard
-from alphazero.self_play_dataset import SelfPlayDataSet, SelfPlayData
+from alphazero.self_play_dataset import SelfPlayDataSet
 from alphazero.train import PolicyValueLoss
+
 
 class GameDataset(Dataset):
     """ 自我博弈数据集类，每个样本为元组 `(feature_planes, pi, z)` """

@@ -1,14 +1,17 @@
 # coding:utf-8
+import ctypes
+import os
 import sys
 
-from PySide6.QtCore import Qt, QUrl, QEventLoop, QTimer, QSize
+from PySide6.QtCore import QUrl, QEventLoop, QTimer, QSize
 from PySide6.QtGui import QIcon, QDesktopServices
-from PySide6.QtWidgets import QApplication, QFrame, QHBoxLayout
+from PySide6.QtWidgets import QApplication
 from qfluentwidgets import SplashScreen, FluentWindow, FluentIcon, NavigationItemPosition, MessageBox, isDarkTheme
 
 from app.common import *
 from app.view import *
-import ctypes
+
+base_dir = os.path.dirname(os.path.abspath(__file__))
 
 
 class Window(FluentWindow):
@@ -26,7 +29,6 @@ class Window(FluentWindow):
         self.initNavigation()
         self.initWindow()
         self.connectSignalToSlot()
-
 
         self.splashScreen = SplashScreen(self.windowIcon(), self)
         self.splashScreen.setIconSize(QSize(102, 102))
@@ -61,7 +63,7 @@ class Window(FluentWindow):
     def initWindow(self):
 
         self.resize(900, 700)
-        self.setWindowIcon(QIcon('resources/icon/BesiegedCityIcon.png'))
+        self.setWindowIcon(QIcon(os.path.join(base_dir, 'resources', 'icon', 'icon.png')))
         self.setWindowTitle('Alpha Besieged City')
 
         desktop = QApplication.screens()[0].availableGeometry()

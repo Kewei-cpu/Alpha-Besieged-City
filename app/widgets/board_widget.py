@@ -4,7 +4,7 @@ import time
 
 from PySide6.QtCore import QPoint, Qt, Signal
 from PySide6.QtGui import QPainter, QGradient, QColor, QPen
-from PySide6.QtWidgets import QWidget, QApplication, QFileDialog
+from PySide6.QtWidgets import QWidget, QFileDialog
 from qfluentwidgets import InfoBar, FluentIcon, InfoBarPosition, StateToolTip
 
 from alphazero import ChessBoard

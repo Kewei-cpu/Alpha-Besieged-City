@@ -1,10 +1,12 @@
 # coding:utf-8
-import sys, os
+import os
+import sys
 
 from PySide6.QtCore import Qt, QUrl
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout
 from qfluentwidgets import *
+
 
 def isWin11():
     return sys.platform == 'win32' and sys.getwindowsversion().build >= 22000

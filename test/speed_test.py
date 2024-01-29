@@ -1,6 +1,5 @@
 import random
 import timeit
-from multiprocessing import Pool
 
 from alphazero import ChessBoard
 

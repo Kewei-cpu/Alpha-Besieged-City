@@ -1,7 +1,6 @@
 import random
 
 import torch
-from torch import Tensor
 
 from alphazero.chess_board import ChessBoard
 

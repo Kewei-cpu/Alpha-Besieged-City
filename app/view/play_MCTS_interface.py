@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout
-from qfluentwidgets import PushButton, ComboBox, FluentIcon
+from qfluentwidgets import PushButton, FluentIcon
 
 from app.widgets.board_widget import BoardWidget
 

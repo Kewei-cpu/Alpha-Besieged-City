@@ -2,7 +2,7 @@
 import torch
 from PySide6.QtCore import QThread, Signal
 
-from alphazero import AlphaZeroMCTS, PolicyValueNet, RolloutMCTS, TerritoryMCTS
+from alphazero import AlphaZeroMCTS, PolicyValueNet, TerritoryMCTS
 from app.common.model_utils import testModel
 from app.config import *
 

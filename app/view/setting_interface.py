@@ -1,9 +1,9 @@
 # coding: utf-8
 
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QWidget, QFileDialog
-from qfluentwidgets import (SettingCardGroup, SwitchSettingCard, OptionsSettingCard, RangeSettingCard, PushSettingCard,
-                            ColorSettingCard, ScrollArea,
+from qfluentwidgets import (SettingCardGroup, SwitchSettingCard, OptionsSettingCard, RangeSettingCard, ColorSettingCard,
+                            ScrollArea,
                             ExpandLayout, Theme, InfoBar, setTheme, FluentIcon, TitleLabel)
 
 from app.common import *
