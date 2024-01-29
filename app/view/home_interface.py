@@ -34,8 +34,7 @@ class AppInfoCard(SimpleCardWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.iconLabel = ImageLabel("resources/icon/bluegreen.png", self)
-        self.iconLabel.setBorderRadius(8, 8, 8, 8)
+        self.iconLabel = ImageLabel("resources/icon/BesiegedCityIcon.png", self)
         self.iconLabel.scaledToWidth(160)
 
         self.nameLabel = TitleLabel('Alpha Besieged City', self)
@@ -134,7 +133,9 @@ class DescriptionCard(HeaderCardWidget):
         self.descriptionLabel = BodyLabel(text, self)
         setFont(self.descriptionLabel, 16)
         self.descriptionLabel.setWordWrap(True)
+        self.descriptionLabel.setContentsMargins(0, 0, 0, 10)
         self.contentLayout.addWidget(self.descriptionLabel)
+        self.contentLayout.addWidget(HorizontalSeparator(self))
 
         self.gameLabel = BodyLabel('Move and Place', self)
         setFont(self.gameLabel, 18, QFont.DemiBold)
@@ -149,7 +150,9 @@ class DescriptionCard(HeaderCardWidget):
         self.descriptionLabel = BodyLabel(text, self)
         setFont(self.descriptionLabel, 16)
         self.descriptionLabel.setWordWrap(True)
+        self.descriptionLabel.setContentsMargins(0, 0, 0, 10)
         self.contentLayout.addWidget(self.descriptionLabel)
+        self.contentLayout.addWidget(HorizontalSeparator(self))
 
         self.gameLabel = BodyLabel('Win or Lose', self)
         setFont(self.gameLabel, 18, QFont.DemiBold)
@@ -164,9 +167,52 @@ class DescriptionCard(HeaderCardWidget):
         self.descriptionLabel = BodyLabel(text, self)
         setFont(self.descriptionLabel, 16)
         self.descriptionLabel.setWordWrap(True)
+        self.descriptionLabel.setContentsMargins(0, 0, 0, 10)
         self.contentLayout.addWidget(self.descriptionLabel)
 
         self.viewLayout.addLayout(self.contentLayout)
+
+
+class RobotInfoCard(HeaderCardWidget):
+    """ Robot information card """
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setTitle('Robot Information')
+        setFont(self.headerLabel, 22, QFont.DemiBold)
+
+        self.contentLayout = QVBoxLayout()
+
+        self.gameLabel = BodyLabel('Max Territory Series', self)
+        setFont(self.gameLabel, 18, QFont.DemiBold)
+        self.contentLayout.addWidget(self.gameLabel)
+
+        text = """Including 4 models: Max Territory, Max Sigmoid Territory, Max Diff Sigmoid Territory,  Max Percent Sigmoid Territory. The are all based on the same territory algorithm, but with different reward function. The first one is the original one, and the other three are based on the sigmoid function, which let them focus more on the general position rather than the specific territory. Currently, the <b>Max Diff Sigmoid Territory</b> model is considered the best one. You can try them all in <b>"Play with Robot"</b> and see which one is the best for you. """
+        self.descriptionLabel = BodyLabel(text, self)
+        setFont(self.descriptionLabel, 16)
+        self.descriptionLabel.setContentsMargins(0, 0, 0, 10)
+        self.descriptionLabel.setWordWrap(True)
+        self.contentLayout.addWidget(self.descriptionLabel)
+        self.contentLayout.addWidget(HorizontalSeparator(self))
+
+        self.gameLabel = BodyLabel('MCTS', self)
+        setFont(self.gameLabel, 18, QFont.DemiBold)
+        self.contentLayout.addWidget(self.gameLabel)
+
+        text = """MCTS is short for Monte Carlo Tree Search. It is a search algorithm that can be used in many games. It is based on the idea of random sampling. In this game, it is used to simulate the game and find the best move. The MCTS model is <b>generally better</b> than Max Territory models, but it is <b>much slower</b>. You can try it in <b>"Play with MCTS"</b> and see how it works. 
+        <br>There are several options for MCTS that you can change in <b>"Settings"</b>:
+        <ul style="list-style:circle;margin-left:-1.5em;margin-top:-10px">
+        <li><b>Exploration Constant</b>: The exploration constant is used to balance the exploration and exploitation. There is no direct relationship between the value and the performance. You can try different values and see which one is the best for you. The default value is 4.
+        <li><b>Number of Iterations</b>: The number of iterations is the number of simulations that the model will run. A higher value means the model will try more moves, which means it will be more accurate. A lower value means the model will try less moves, which means it will be faster. The default value is 1000.
+        """
+        self.descriptionLabel = BodyLabel(text, self)
+        setFont(self.descriptionLabel, 16)
+        self.descriptionLabel.setContentsMargins(0, 0, 0, 10)
+        self.descriptionLabel.setWordWrap(True)
+        self.contentLayout.addWidget(self.descriptionLabel)
+
+        self.viewLayout.addLayout(self.contentLayout)
+
 
 
 
@@ -182,6 +228,7 @@ class HomeInterface(SingleDirectionScrollArea):
         # self.galleryCard = GalleryCard(self)
         self.descriptionCard = DescriptionCard(self)
         # self.systemCard = SystemRequirementCard(self)
+        self.robotCard = RobotInfoCard(self)
 
         self.setWidget(self.view)
         self.setWidgetResizable(True)
@@ -191,6 +238,7 @@ class HomeInterface(SingleDirectionScrollArea):
         self.vBoxLayout.setContentsMargins(10, 10, 10, 30)
         self.vBoxLayout.addWidget(self.appCard, 0, Qt.AlignTop)
         self.vBoxLayout.addWidget(self.descriptionCard, 0, Qt.AlignTop)
+        self.vBoxLayout.addWidget(self.robotCard, 0, Qt.AlignTop)
 
         self.setStyleSheet("QScrollArea {border: none; background:transparent}")
         self.view.setStyleSheet('QWidget {background:transparent}')

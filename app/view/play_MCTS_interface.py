@@ -4,7 +4,7 @@ from qfluentwidgets import PushButton, ComboBox, FluentIcon
 from app.widgets.board_widget import BoardWidget
 
 
-class PlayRobotInterface(QWidget):
+class PlayMCTSInterface(QWidget):
     def __init__(self, text, parent):
         super().__init__(parent)
         self.setMinimumSize(600, 500)
@@ -12,6 +12,7 @@ class PlayRobotInterface(QWidget):
         self.setObjectName(text.replace(' ', '-'))
 
         self.board_widget = BoardWidget(text, self)
+        self.board_widget.onEnableNN()
 
         self.main_layout = QVBoxLayout()
         self.button_layout = QHBoxLayout()
@@ -59,18 +60,9 @@ class PlayRobotInterface(QWidget):
         self.skip_button = PushButton(self)
         self.skip_button.setText("Skip")
         self.skip_button.setIcon(FluentIcon.CHEVRON_RIGHT)
-        self.skip_button.clicked.connect(self.board_widget.robotMove)
+        self.skip_button.clicked.connect(self.board_widget.nnMove)
         self.board_widget.onSkipAvailable.connect(self.skip_button.setEnabled)
         self.button_layout.addWidget(self.skip_button)
-
-        self.select_robot = ComboBox(self)
-        self.select_robot.setPlaceholderText("Robots")
-        self.select_robot.setIcon(FluentIcon.ROBOT.icon())
-        self.select_robot.addItems(['Random', 'Max Territory', 'Max Sigmoid Territory', 'Max Diff Sigmoid Territory',
-                                    'Max Percent Sigmoid Territory'])
-        self.select_robot.setCurrentIndex(-1)
-        self.select_robot.currentTextChanged.connect(self.board_widget.onSelectRobot)
-        self.button_layout.addWidget(self.select_robot)
 
         self.save_button = PushButton(self)
         self.save_button.setText("Save")
@@ -78,6 +70,7 @@ class PlayRobotInterface(QWidget):
         self.save_button.clicked.connect(self.board_widget.onSave)
         self.board_widget.onSaveAvailable.connect(self.save_button.setEnabled)
         self.button_layout.addWidget(self.save_button)
+
 
         self.main_layout.addWidget(self.board_widget)
         self.main_layout.addLayout(self.button_layout)

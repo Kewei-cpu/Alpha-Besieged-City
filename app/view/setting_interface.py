@@ -6,19 +6,16 @@ from qfluentwidgets import (SettingCardGroup, SwitchSettingCard, OptionsSettingC
                             ColorSettingCard, ScrollArea,
                             ExpandLayout, Theme, InfoBar, setTheme, FluentIcon, TitleLabel)
 
+from app.common import *
 from app.config import *
 
 
-
-
 class SettingInterface(ScrollArea):
-    enableAcrylicChanged = Signal(bool)
-    MCTSRefreshSignal = Signal()
-
     def __init__(self, text, parent=None):
         super().__init__(parent=parent)
 
         self.setObjectName(text.replace(' ', '-'))
+        self.setMinimumSize(600, 500)
 
         self.scrollWidget = QWidget(self)
 
@@ -29,9 +26,17 @@ class SettingInterface(ScrollArea):
 
         self.AppearanceGroup = SettingCardGroup("Appearance", self.scrollWidget)
 
+        self.enableAcrylicCard = SwitchSettingCard(
+            FluentIcon.TRANSPARENT,
+            "Use Acrylic effect",
+            "Acrylic effect has better visual experience, but it may cause the window to become stuck",
+            configItem=cfg.enableAcrylicBackground,
+            parent=self.AppearanceGroup
+        )
+
         self.themeModeCard = OptionsSettingCard(
             cfg.themeMode,
-            FluentIcon.BRUSH,
+            FluentIcon.CONSTRACT,
             "Application Theme",
             "Change the appearance of your application",
             texts=['Light', 'Dark', 'Use system setting'],
@@ -39,7 +44,7 @@ class SettingInterface(ScrollArea):
         )
         self.themeColorCard = ColorSettingCard(
             cfg.themeColor,
-            FluentIcon.PALETTE,
+            FluentIcon.BRUSH,
             "Theme Color",
             "Change the theme color of you application",
             parent=self.AppearanceGroup,
@@ -54,7 +59,7 @@ class SettingInterface(ScrollArea):
         )
         self.boardBackgroundAlphaCard = RangeSettingCard(
             cfg.boardBackgroundAlpha,
-            FluentIcon.SETTING,
+            FluentIcon.FIT_PAGE,
             "Board Background Opacity",
             "Change the opacity of the board background",
             parent=self.AppearanceGroup
@@ -69,65 +74,65 @@ class SettingInterface(ScrollArea):
         )
         self.boardGridAlphaCard = RangeSettingCard(
             cfg.boardGridAlpha,
-            FluentIcon.SETTING,
+            FluentIcon.FIT_PAGE,
             "Board Grid Opacity",
             "Change the opacity of the board gird",
             parent=self.AppearanceGroup
         )
 
         self.AppearanceGroup.addSettingCard(self.themeModeCard)
+        self.AppearanceGroup.addSettingCard(self.enableAcrylicCard)
         self.AppearanceGroup.addSettingCard(self.themeColorCard)
         self.AppearanceGroup.addSettingCard(self.boardBackgroundColorCard)
         self.AppearanceGroup.addSettingCard(self.boardBackgroundAlphaCard)
         self.AppearanceGroup.addSettingCard(self.boardGridColorCard)
         self.AppearanceGroup.addSettingCard(self.boardGridAlphaCard)
 
-        self.musicInThisPCGroup = SettingCardGroup("Alpha Besieged City on this PC", self.scrollWidget)
-
-        self.modelFolderCard = PushSettingCard(
-            "Choose Folder",
-            FluentIcon.FOLDER,
-            "Model directory",
-            cfg.get(cfg.modelPath),
-            parent=self.musicInThisPCGroup
-        )
-
-        self.musicInThisPCGroup.addSettingCard(self.modelFolderCard)
 
         self.MCTSGroup = SettingCardGroup("MCTS", self.scrollWidget)
 
         self.cPuctCard = RangeSettingCard(
             cfg.cPuct,
-            FluentIcon.SETTING,
+            FluentIcon.DEVELOPER_TOOLS,
             "Exploration Constant",
+            "Higher value means more exploration, lower value means more exploitation",
             parent=self.MCTSGroup,
         )
 
         self.numIterCard = RangeSettingCard(
             cfg.numIter,
-            FluentIcon.SETTING,
-            "Iteration Times",
+            FluentIcon.SEARCH,
+            "Number of Iterations",
+            "Higher value means more accurate, but it will take more time",
             parent=self.MCTSGroup,
         )
 
-        self.useGPUCard = SwitchSettingCard(
-            FluentIcon.SPEED_HIGH,
-            "Use GPU as Accelerator",
-            "Using GPU can speed up the thinking of Alpha Gobang (if available)",
-            cfg.useGPU,
-            parent=self.MCTSGroup,
-        )
+        # self.useGPUCard = SwitchSettingCard(
+        #     FluentIcon.SPEED_HIGH,
+        #     "Use GPU as Accelerator",
+        #     "Using GPU can speed up the thinking of Alpha Gobang (if available)",
+        #     cfg.useGPU,
+        #     parent=self.MCTSGroup,
+        # )
+        #
+        # self.modelFolderCard = PushSettingCard(
+        #     "Choose Model File",
+        #     FluentIcon.DOCUMENT,
+        #     "Model directory",
+        #     cfg.get(cfg.modelPath),
+        #     parent=self.MCTSGroup
+        # )
 
         self.MCTSGroup.addSettingCard(self.cPuctCard)
         self.MCTSGroup.addSettingCard(self.numIterCard)
-        self.MCTSGroup.addSettingCard(self.useGPUCard)
+        # self.MCTSGroup.addSettingCard(self.useGPUCard)
+        # self.MCTSGroup.addSettingCard(self.modelFolderCard)
 
         self.expandLayout.setSpacing(28)
         self.expandLayout.setContentsMargins(20, 10, 20, 20)
 
         self.expandLayout.addWidget(self.settingsLabel)
         self.expandLayout.addWidget(self.AppearanceGroup)
-        self.expandLayout.addWidget(self.musicInThisPCGroup)
         self.expandLayout.addWidget(self.MCTSGroup)
 
         self.resize(1200, 800)
@@ -144,14 +149,16 @@ class SettingInterface(ScrollArea):
         cfg.appRestartSig.connect(self.__showRestartTooltip)
         cfg.themeChanged.connect(self.__onThemeChanged)
 
-        self.modelFolderCard.clicked.connect(self.__onModelFolderCardClicked)
-        self.cPuctCard.valueChanged.connect(self.__onMCTSChanged)
-        self.numIterCard.valueChanged.connect(self.__onMCTSChanged)
-        self.useGPUCard.checkedChanged.connect(self.__onMCTSChanged)
+        self.enableAcrylicCard.checkedChanged.connect(signalBus.micaEnableChanged.emit)
+
+        # self.modelFolderCard.clicked.connect(self.__onModelFolderCardClicked)
+        self.cPuctCard.valueChanged.connect(signalBus.modelChanged.emit)
+        self.numIterCard.valueChanged.connect(signalBus.modelChanged.emit)
+        # self.useGPUCard.checkedChanged.connect(signalBus.modelChanged.emit)
 
         self.cPuctCard.slider.sliderReleased.connect(self.__showSuccessTooltip)
         self.numIterCard.slider.sliderReleased.connect(self.__showSuccessTooltip)
-        self.useGPUCard.checkedChanged.connect(self.__showSuccessTooltip)
+        # self.useGPUCard.checkedChanged.connect(self.__showSuccessTooltip)
 
     def __setQss(self):
         """ set style sheet """
@@ -188,8 +195,6 @@ class SettingInterface(ScrollArea):
 
         cfg.set(cfg.modelPath, path[0])
         self.modelFolderCard.setContent(path[0])
-        self.__onMCTSChanged()
+        signalBus.modelChanged.emit()
         self.__showSuccessTooltip()
 
-    def __onMCTSChanged(self):
-        self.MCTSRefreshSignal.emit()

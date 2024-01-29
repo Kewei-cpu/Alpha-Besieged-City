@@ -2,21 +2,22 @@ import json
 import os
 import time
 
-from PySide6.QtCore import QPoint, Qt
-from PySide6.QtGui import QPainter, QGradient, QColor, QPen, QRadialGradient
-from PySide6.QtWidgets import QWidget, QApplication
-from qfluentwidgets import InfoBar, FluentIcon, InfoBarPosition, StateToolTip, Dialog
+from PySide6.QtCore import QPoint, Qt, Signal
+from PySide6.QtGui import QPainter, QGradient, QColor, QPen
+from PySide6.QtWidgets import QWidget, QApplication, QFileDialog
+from qfluentwidgets import InfoBar, FluentIcon, InfoBarPosition, StateToolTip
 
 from alphazero import ChessBoard
-from app.common.ai_thread import AIThread
+from app.common import *
 from app.config import *
-
 from arena import *
 
-BLUE = (130, 175, 214)
+# BLUE = (130, 175, 214)
+BLUE = (60, 144, 217)
 LIGHT_BLUE = tuple([int(255 - (255 - color) * 0.7) for color in BLUE])
 DARK_BLUE = tuple([int(color * 0.7) for color in BLUE])
-GREEN = (80, 181, 142)
+# GREEN = (80, 181, 142)
+GREEN = (26, 177, 100)
 LIGHT_GREEN = tuple([int(255 - (255 - color) * 0.5) for color in GREEN])
 DARK_GREEN = tuple([int(color * 0.7) for color in GREEN])
 
@@ -25,6 +26,11 @@ BLACK = (0, 0, 0)
 
 
 class BoardWidget(QWidget):
+    onNotFirstMove = Signal(bool)
+    onNotLastMove = Signal(bool)
+    onSaveAvailable = Signal(bool)
+    onSkipAvailable = Signal(bool)
+
     def __init__(self, text, parent):
         super().__init__(parent)
 
@@ -55,7 +61,10 @@ class BoardWidget(QWidget):
 
         self.blue_final_territory = []
         self.green_final_territory = []
+
         self.history = []
+        self.current_step = 0
+
         self.all_games = []
 
     def updateBoardSize(self):
@@ -89,6 +98,8 @@ class BoardWidget(QWidget):
         else:
             self.drawFinalTerritory(painter)
             self.drawDeadPlayer(painter)
+
+        self.refreshSignal()
 
     def drawBackground(self, painter):
         painter.setPen(Qt.NoPen)
@@ -254,19 +265,26 @@ class BoardWidget(QWidget):
                 available_positions.append(pos)
 
         for pos in available_positions:
-            grad = QRadialGradient(
-                self.margin_size[0] + pos[1] * self.grid_size + self.grid_size / 2,
-                self.margin_size[1] + pos[0] * self.grid_size + self.grid_size / 2,
-                self.grid_size / 2,
-                self.margin_size[0] + pos[1] * self.grid_size + self.grid_size / 2,
-                self.margin_size[1] + pos[0] * self.grid_size + self.grid_size / 2,
-                self.grid_size / 4
+            painter.setPen(Qt.NoPen)
+            painter.setBrush(QColor(*light_color, 100))
+            ## draw a small circle at the center of the grid
+            painter.drawEllipse(
+                self.margin_size[0] + (pos[1] + 0.35) * self.grid_size,
+                self.margin_size[1] + (pos[0] + 0.35) * self.grid_size,
+                self.grid_size * 0.3,
+                self.grid_size * 0.3,
             )
 
-            grad.setColorAt(0, QColor(*light_color, 0))
-            grad.setColorAt(1, QColor(*light_color, 180))
-            painter.setPen(Qt.NoPen)
-            painter.setBrush(grad)
+    def drawFinalTerritory(self, painter: QPainter):
+        """
+        显示最终领地（游戏结束后）
+        :param scr: 屏幕
+        :return:
+        """
+        painter.setPen(Qt.NoPen)
+
+        painter.setBrush(QColor(*LIGHT_BLUE, 100))
+        for pos in self.blue_final_territory:
             painter.drawRoundedRect(
                 self.margin_size[0] + pos[1] * self.grid_size + self.padding_size / 2,
                 self.margin_size[1] + pos[0] * self.grid_size + self.padding_size / 2,
@@ -276,28 +294,15 @@ class BoardWidget(QWidget):
                 5
             )
 
-    def drawFinalTerritory(self, painter: QPainter):
-        """
-        显示最终领地（游戏结束后）
-        :param scr: 屏幕
-        :return:
-        """
-        for pos in self.blue_final_territory:
-            painter.fillRect(
-                self.margin_size[0] + pos[1] * self.grid_size + self.padding_size / 2,
-                self.margin_size[1] + pos[0] * self.grid_size + self.padding_size / 2,
-                self.grid_size - self.padding_size,
-                self.grid_size - self.padding_size,
-                QColor(*LIGHT_BLUE, 100)
-            )
-
+        painter.setBrush(QColor(*LIGHT_GREEN, 100))
         for pos in self.green_final_territory:
-            painter.fillRect(
+            painter.drawRoundedRect(
                 self.margin_size[0] + pos[1] * self.grid_size + self.padding_size / 2,
                 self.margin_size[1] + pos[0] * self.grid_size + self.padding_size / 2,
                 self.grid_size - self.padding_size,
                 self.grid_size - self.padding_size,
-                QColor(*LIGHT_GREEN, 100)
+                5,
+                5
             )
 
     def drawWall(self, painter: QPainter):
@@ -330,7 +335,7 @@ class BoardWidget(QWidget):
         :return:
         """
         painter.setPen(Qt.NoPen)
-        painter.setBrush(QColor(*color, 180))
+        painter.setBrush(QColor(*color, 120))
         painter.drawPolygon(
             (QPoint(self.margin_size[0] + pos_x * self.grid_size,
                     self.margin_size[1] + (pos_y + 1) * self.grid_size),
@@ -358,7 +363,7 @@ class BoardWidget(QWidget):
         """
 
         painter.setPen(Qt.NoPen)
-        painter.setBrush(QColor(*color, 180))
+        painter.setBrush(QColor(*color, 120))
         painter.drawPolygon(
             (QPoint(self.margin_size[0] + (pos_x + 1) * self.grid_size,
                     self.margin_size[1] + pos_y * self.grid_size),
@@ -432,31 +437,58 @@ class BoardWidget(QWidget):
             if self.enable_NN:
                 self.nnMove()
 
+    def refreshBoard(self):
+        self.board.clear_board()
+        self.running = True
+        self.active_player_pos_index = 0
+        self.blue_final_territory = []
+        self.green_final_territory = []
+        for action in self.history[:self.current_step]:
+            self.doAction(action, False)
+
+        self.update()
+
     def onRestart(self):
         if self.isAIThinking:
             return
 
-        self.board.clear_board()
-        self.running = True
-        self.active_player_pos_index = 0
-        self.blue_final_territory = []
-        self.green_final_territory = []
+        self.current_step = 0
         self.history = []
-        self.update()
+        self.refreshBoard()
 
-    def onUndo(self):
+    def onPrevious(self):
         if self.isAIThinking:
             return
+        if self.current_step <= 0:
+            return
 
-        self.board.clear_board()
-        self.running = True
-        self.active_player_pos_index = 0
-        self.blue_final_territory = []
-        self.green_final_territory = []
-        for action in self.history[:-1]:
-            self.board.do_action(action)
-        self.history = self.history[:-1]
-        self.update()
+        self.current_step -= 1
+        self.refreshBoard()
+
+    def onNext(self):
+        if self.isAIThinking:
+            return
+        if self.current_step >= len(self.history):
+            return
+
+        self.current_step += 1
+        self.refreshBoard()
+
+    def onFirst(self):
+        if self.isAIThinking:
+            return
+        if self.current_step <= 0:
+            return
+        self.current_step = 0
+        self.refreshBoard()
+
+    def onLast(self):
+        if self.isAIThinking:
+            return
+        if self.current_step >= len(self.history):
+            return
+        self.current_step = len(self.history)
+        self.refreshBoard()
 
     def onSave(self):
         if not self.history:
@@ -479,7 +511,7 @@ class BoardWidget(QWidget):
         else:
             result = "Unfinished"
 
-        with open(f'./log/board/game_{t}.json', 'w', encoding='utf-8') as f:
+        with open(f'./log/board/game_{t}.abc', 'w', encoding='utf-8') as f:
             game_dict = {
                 "Time": t,
                 "Moves": self.history,
@@ -494,6 +526,34 @@ class BoardWidget(QWidget):
             parent=self,
         )
 
+    def onLoad(self):
+        if self.isAIThinking:
+            return
+
+        path = QFileDialog.getOpenFileName(
+            self, "Choose Game File", "log/board", "Alpha Besieged City Game (*.abc)")
+
+        if not path[0]:
+            return
+
+        with open(path[0], 'r', encoding='utf-8') as f:
+            game_dict = json.load(f)
+            try:
+                self.history = game_dict["Moves"]
+                self.current_step = 0
+                self.refreshBoard()
+            except Exception:
+                InfoBar.error(
+                    title="Load Failed",
+                    content="Can't load this game!",
+                    parent=self)
+            else:
+                InfoBar.success(
+                    title="Game Loaded",
+                    content=f"Loaded game with {len(self.history)} moves",
+                    duration=2000,
+                    parent=self,
+                )
     def onCopyPosition(self):
         clipboard = QApplication.clipboard()
         position = str(self.board.state.tolist())
@@ -512,13 +572,13 @@ class BoardWidget(QWidget):
     def onSelectRobot(self, text):
         if text == "Random":
             self.robot = Random(self.board)
-        elif text == "MaxTerritory":
+        elif text == "Max Territory":
             self.robot = MaxTerritory(self.board)
-        elif text == "MaxSigmoidTerritory":
+        elif text == "Max Sigmoid Territory":
             self.robot = MaxSigmoidTerritory(self.board, K=2, B=2)
-        elif text == "MaxDiffSigmoidTerritory":
+        elif text == "Max Diff Sigmoid Territory":
             self.robot = MaxDiffSigmoidTerritory(self.board, K=2, B=2)
-        elif text == "MaxPercentSigmoidTerritory":
+        elif text == "Max Percent Sigmoid Territory":
             self.robot = MaxPercentSigmoidTerritory(self.board, K=2, B=2)
 
     def onEnableNN(self):
@@ -526,7 +586,7 @@ class BoardWidget(QWidget):
             chessBoard=self.board,
             parent=self
         )
-        self.parent().parent().settingInterface.MCTSRefreshSignal.connect(self.onRefreshMCTS)
+        signalBus.modelChanged.connect(self.onRefreshMCTS)
         self.aiThread.searchComplete.connect(self.onSearchComplete)
         self.enable_NN = True
 
@@ -562,7 +622,7 @@ class BoardWidget(QWidget):
         )
         w.setCustomBackgroundColor(color, color)
 
-    def doAction(self, action):
+    def doAction(self, action, change_history=True):
         """
         执行动作
         :param action: 动作（0-99整数）
@@ -572,7 +632,11 @@ class BoardWidget(QWidget):
             return False
 
         self.board.do_action(action)
-        self.history.append(action)
+
+        if change_history:
+            self.history = self.history[:self.current_step]
+            self.history.append(action)
+            self.current_step += 1
 
         if self.board.is_game_over_()[0]:
             self.running = False
@@ -589,12 +653,18 @@ class BoardWidget(QWidget):
         return True
 
     def robotMove(self):
-        if self.running == False:
+        if not self.running:
             return
 
         move = self.robot.play()
         self.doAction(move)
         self.update()
+
+    def refreshSignal(self):
+        self.onNotFirstMove.emit(self.current_step > 0)
+        self.onNotLastMove.emit(self.current_step < len(self.history))
+        self.onSaveAvailable.emit(len(self.history) > 0)
+        self.onSkipAvailable.emit(self.robot is not None or self.enable_NN)
 
     def nnMove(self):
         """ 获取 AI 的动作 """

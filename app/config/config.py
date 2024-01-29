@@ -34,47 +34,34 @@ class BoardGridColorEnum(Enum):
 class Config(QConfig):
     """ Config of application """
 
-    modelPath = ConfigItem(
-        "Model", "ModelPath", "")
+
 
     cPuct = RangeConfigItem(
-        "MonteCarloTree", "CPuct", 4, RangeValidator(1, 10))
+        "MonteCarloTree", "CPuct", 4, RangeValidator(4, 10))
     numIter = RangeConfigItem(
         "MonteCarloTree", "NumIter", 1000, RangeValidator(100, 10000))
     useGPU = ConfigItem(
         "MonteCarloTree", "UseGPU", True, BoolValidator())
+    modelPath = ConfigItem(
+        "MonteCarloTree", "ModelPath", "")
+
+
+    enableAcrylicBackground = ConfigItem(
+        "MainWindow", "EnableAcrylicBackground", False, BoolValidator())
 
     boardBackground = OptionsConfigItem(
-        "Board", "BackgroundColor", BoardBackgroundColorEnum.PoliteRumors, OptionsValidator(BoardBackgroundColorEnum),
+        "Board", "BackgroundColor", BoardBackgroundColorEnum.SunnyMorning, OptionsValidator(BoardBackgroundColorEnum),
         EnumSerializer(BoardBackgroundColorEnum))
     boardBackgroundAlpha = RangeConfigItem(
-        "Board", "BackgroundAlpha", 100, RangeValidator(0, 100)
+        "Board", "BackgroundAlpha", 20, RangeValidator(0, 100)
     )
     boardGridColor = OptionsConfigItem(
-        "Board", "GridColor", BoardGridColorEnum.SaintPetersburg, OptionsValidator(BoardGridColorEnum),
+        "Board", "GridColor", BoardGridColorEnum.ViciousStance, OptionsValidator(BoardGridColorEnum),
         EnumSerializer(BoardGridColorEnum))
     boardGridAlpha = RangeConfigItem(
-        "Board", "GridAlpha", 100, RangeValidator(0, 100)
+        "Board", "GridAlpha", 20, RangeValidator(0, 100)
     )
 
-
-#     # software update
-#     checkUpdateAtStartUp = ConfigItem(
-#         "Update", "CheckUpdateAtStartUp", True, BoolValidator())
-#
-#     @property
-#     def desktopLyricFont(self):
-#         """ get the desktop lyric font """
-#         font = QFont(self.deskLyricFontFamily.value)
-#         font.setPixelSize(self.deskLyricFontSize.value)
-#         return font
-#
-#     @desktopLyricFont.setter
-#     def desktopLyricFont(self, font: QFont):
-#         dpi = QGuiApplication.primaryScreen().logicalDotsPerInch()
-#         self.deskLyricFontFamily.value = font.family()
-#         self.deskLyricFontSize.value = max(15, int(font.pointSize()*dpi/72))
-#         self.save()
 
 
 YEAR = 2024
