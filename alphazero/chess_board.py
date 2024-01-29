@@ -3,7 +3,6 @@ from copy import deepcopy
 from typing import Tuple, List, Any
 
 import numpy as np
-import torch
 from numpy import ndarray
 
 
@@ -186,13 +185,6 @@ class ChessBoard:
 
         return False, None, None
 
-    def get_feature_planes(self) -> torch.Tensor:
-        """
-        获取特征平面
-        :return: torch.Tensor of shape (n_feature_planes, board_len, board_len)
-        """
-
-        return torch.tensor(self.state, dtype=torch.float)
 
     def get_available_actions(self) -> List[int]:
         """
@@ -374,16 +366,6 @@ class ChessBoard:
                 return False
         return True
 
-    @staticmethod
-    def array_to_coordinates(array: np.ndarray) -> np.ndarray:
-        """
-        找出2D数组中所有为1的位置
-        :param array: 2维数组
-        :return: 1的位置二维数组，注意即使只有一个1，也是数组
-        """
-        array = array.copy()
-
-        return np.stack(np.where(array == 1)).T.tolist()
 
     @staticmethod
     def array_to_only_coordinate(array: np.ndarray) -> tuple[int, int]:
