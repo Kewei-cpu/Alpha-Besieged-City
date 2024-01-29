@@ -1,5 +1,5 @@
 # coding:utf-8
-import sys
+import sys, os
 
 from PySide6.QtCore import Qt, QUrl, QEventLoop, QTimer, QSize
 from PySide6.QtGui import QIcon, QDesktopServices
@@ -9,6 +9,8 @@ from qfluentwidgets import SplashScreen, FluentWindow, FluentIcon, NavigationIte
 from app.common import *
 from app.view import *
 import ctypes
+
+base_dir = os.path.dirname(os.path.abspath(__file__))
 
 
 class Window(FluentWindow):
@@ -61,7 +63,7 @@ class Window(FluentWindow):
     def initWindow(self):
 
         self.resize(900, 700)
-        self.setWindowIcon(QIcon('resources/icon/icon.png'))
+        self.setWindowIcon(QIcon(os.path.join(base_dir, 'resources', 'icon', 'icon.png')))
         self.setWindowTitle('Alpha Besieged City')
 
         desktop = QApplication.screens()[0].availableGeometry()
