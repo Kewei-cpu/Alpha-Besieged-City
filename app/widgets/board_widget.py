@@ -31,13 +31,13 @@ class BoardWidget(QWidget):
     onSaveAvailable = Signal(bool)
     onSkipAvailable = Signal(bool)
 
-    def __init__(self, text, parent):
+    def __init__(self, routeKey, parent):
         super().__init__(parent)
 
         self.setMinimumSize(400, 400)
         self.setMouseTracking(True)
 
-        self.setObjectName(text.replace(' ', '-'))
+        self.setObjectName(routeKey.replace(' ', '-'))
 
         self.screen_size = self.size().width(), self.size().height()
         self.board_len = 7
@@ -54,7 +54,7 @@ class BoardWidget(QWidget):
 
         self.robot = None
 
-        self.enable_NN = False
+        self.MCTS_enabled = False
         self.aiThread = None
         self.isAIThinking = False
         self.stateTooltip = None
@@ -434,7 +434,7 @@ class BoardWidget(QWidget):
         if s and self.running:
             if self.robot is not None:
                 self.robotMove()
-            if self.enable_NN:
+            if self.MCTS_enabled:
                 self.nnMove()
 
     def refreshBoard(self):
@@ -523,7 +523,7 @@ class BoardWidget(QWidget):
         InfoBar.success(
             title="Game Saved",
             content=f"Game saved to log/board/",
-            parent=self,
+            parent=self.parent().parent(),
         )
 
     def onLoad(self):
@@ -546,15 +546,16 @@ class BoardWidget(QWidget):
                 InfoBar.error(
                     title="Load Failed",
                     content="Can't load this game!",
-                    parent=self)
+                    duration=2000,
+                    parent=self.parent().parent()
+                )
             else:
                 InfoBar.success(
-                    title="Game Loaded",
+                    title="Load Successfully",
                     content=f"Loaded game with {len(self.history)} moves",
                     duration=2000,
-                    parent=self,
+                    parent=self.parent().parent(),
                 )
-
 
     def onSelectRobot(self, text):
         if text == "Random":
@@ -568,19 +569,19 @@ class BoardWidget(QWidget):
         elif text == "Max Percent Sigmoid Territory":
             self.robot = MaxPercentSigmoidTerritory(self.board, K=2, B=2)
 
-    def onEnableNN(self):
+    def onEnableMCTS(self):
         self.aiThread = AIThread(
             chessBoard=self.board,
             parent=self
         )
         signalBus.modelChanged.connect(self.onRefreshMCTS)
         self.aiThread.searchComplete.connect(self.onSearchComplete)
-        self.enable_NN = True
+        self.MCTS_enabled = True
 
     def onRefreshMCTS(self):
         if self.isAIThinking:
             return
-        if not self.enable_NN:
+        if not self.MCTS_enabled:
             return
 
         self.aiThread = AIThread(
@@ -605,7 +606,7 @@ class BoardWidget(QWidget):
             isClosable=True,
             position=InfoBarPosition.TOP,
             duration=3000,
-            parent=self
+            parent=self.parent().parent()
         )
         w.setCustomBackgroundColor(color, color)
 
@@ -651,7 +652,7 @@ class BoardWidget(QWidget):
         self.onNotFirstMove.emit(self.current_step > 0)
         self.onNotLastMove.emit(self.current_step < len(self.history))
         self.onSaveAvailable.emit(len(self.history) > 0)
-        self.onSkipAvailable.emit(self.robot is not None or self.enable_NN)
+        self.onSkipAvailable.emit(self.robot is not None or self.MCTS_enabled)
 
     def nnMove(self):
         """ 获取 AI 的动作 """
@@ -661,9 +662,9 @@ class BoardWidget(QWidget):
         self.stateTooltip = StateToolTip(
             title='AI is thinking',
             content='Please wait a moment',
-            parent=self
+            parent=self.parent().parent()
         )
-        self.stateTooltip.move(self.window().width() - self.stateTooltip.width() - 75, 10)
+        self.stateTooltip.move(self.window().width() - self.stateTooltip.width() - 85, 10)
         self.stateTooltip.raise_()
         self.stateTooltip.show()
 

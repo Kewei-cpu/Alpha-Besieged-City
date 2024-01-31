@@ -6,25 +6,25 @@ import sys
 from PySide6.QtCore import QUrl, QEventLoop, QTimer, QSize
 from PySide6.QtGui import QIcon, QDesktopServices
 from PySide6.QtWidgets import QApplication
-from qfluentwidgets import SplashScreen, FluentWindow, FluentIcon, NavigationItemPosition, MessageBox, isDarkTheme
+from qfluentwidgets import SplashScreen, FluentIcon, NavigationItemPosition, MessageBox, isDarkTheme, \
+    MSFluentWindow, NavigationAvatarWidget
 
 from app.common import *
 from app.view import *
+import resources.resources
 
 base_dir = os.path.dirname(os.path.abspath(__file__))
 
 
-class Window(FluentWindow):
+class Window(MSFluentWindow):
 
     def __init__(self):
         super().__init__()
 
         # create sub interface
-        self.homeInterface = HomeInterface('Home Interface', self)
-        self.playFriendInterface = PlayFriendInterface('Player with Friends', self)
-        self.playRobotInterface = PlayRobotInterface('Player with Robots', self)
-        self.playMCTSInterface = PlayMCTSInterface('Player with MCTS', self)
-        self.settingInterface = SettingInterface('Setting Interface', self)
+        self.homeInterface = HomeInterface('Home', self)
+        self.playInterface = PlayInterface('Play', self)
+        self.settingInterface = SettingInterface('Setting', self)
 
         self.initNavigation()
         self.initWindow()
@@ -40,30 +40,23 @@ class Window(FluentWindow):
 
     def initNavigation(self):
         self.addSubInterface(self.homeInterface, FluentIcon.HOME, 'Home')
-
-        self.navigationInterface.addSeparator()
-
-        self.addSubInterface(self.playFriendInterface, FluentIcon.PEOPLE, 'Play with Friends',
-                             NavigationItemPosition.SCROLL)
-        self.addSubInterface(self.playRobotInterface, FluentIcon.ROBOT, 'Play with Robots',
-                             NavigationItemPosition.SCROLL)
-        self.addSubInterface(self.playMCTSInterface, FluentIcon.IOT, 'Play with MCTS',
-                             NavigationItemPosition.SCROLL)
+        self.addSubInterface(self.playInterface, MyFluentIcon.GRID, 'Play')
 
         # add custom widget to bottom
         # self.navigationInterface.addWidget(
         #     routeKey='avatar',
-        #     widget=NavigationAvatarWidget('zhiyiYo', 'resource/shoko.png'),
+        #     widget=NavigationAvatarWidget('zhiyiYo', ':/logo/icon.png'),
         #     onClick=self.showMessageBox,
         #     position=NavigationItemPosition.BOTTOM,
         # )
 
-        self.addSubInterface(self.settingInterface, FluentIcon.SETTING, 'Settings', NavigationItemPosition.BOTTOM)
+        self.addSubInterface(self.settingInterface, FluentIcon.SETTING, 'Settings',
+                             position=NavigationItemPosition.BOTTOM)
 
     def initWindow(self):
 
         self.resize(900, 700)
-        self.setWindowIcon(QIcon(os.path.join(base_dir, 'resources', 'icon', 'icon.png')))
+        self.setWindowIcon(QIcon(':/logo/icon.ico'))
         self.setWindowTitle('Alpha Besieged City')
 
         desktop = QApplication.screens()[0].availableGeometry()
