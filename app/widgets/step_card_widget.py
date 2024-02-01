@@ -2,6 +2,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QVBoxLayout, QSizePolicy, QWidget
 from qfluentwidgets import CardWidget, CaptionLabel, FlowLayout, isDarkTheme, SingleDirectionScrollArea, setFont
+
 from app.common import convertMoveToNotation
 
 
@@ -29,7 +30,6 @@ class SingleStepCard(CardWidget):
     def setActive(self, active):
         self.active = active
         self._updateBackgroundColor()
-
 
     def _normalBackgroundColor(self):
         c = self.color.__copy__()
@@ -95,3 +95,7 @@ class StepCard(CardWidget):
         for i in range(self.scroll_area.flowLayout.count()):
             self.scroll_area.flowLayout.itemAt(i).widget().setActive(False)
         self.scroll_area.flowLayout.itemAt(index).widget().setActive(True)
+
+    def setAllInactive(self):
+        for i in range(self.scroll_area.flowLayout.count()):
+            self.scroll_area.flowLayout.itemAt(i).widget().setActive(False)
