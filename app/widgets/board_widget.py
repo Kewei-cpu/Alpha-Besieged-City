@@ -3,9 +3,9 @@ import os
 import time
 
 from PySide6.QtCore import QPoint, Qt, Signal
-from PySide6.QtGui import QPainter, QGradient, QColor, QPen
-from PySide6.QtWidgets import QWidget, QFileDialog
-from qfluentwidgets import InfoBar, FluentIcon, InfoBarPosition, StateToolTip
+from PySide6.QtGui import QPainter, QGradient, QColor, QPen, QFont
+from PySide6.QtWidgets import QFileDialog
+from qfluentwidgets import InfoBar, FluentIcon, InfoBarPosition, StateToolTip, CardWidget, isDarkTheme
 
 from alphazero import ChessBoard
 from app.common import *
@@ -25,11 +25,13 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 
 
-class BoardWidget(QWidget):
+class BoardWidget(CardWidget):
     onNotFirstMove = Signal(bool)
     onNotLastMove = Signal(bool)
     onSaveAvailable = Signal(bool)
     onSkipAvailable = Signal(bool)
+    onHistoryChanged = Signal(list)
+    onStepChanged = Signal(int)
 
     def __init__(self, routeKey, parent):
         super().__init__(parent)
@@ -86,6 +88,7 @@ class BoardWidget(QWidget):
 
         self.drawBackground(painter)
         self.drawBoard(painter)
+        self.drawCoordinate(painter)
         self.drawWall(painter)
 
         if self.running:
@@ -131,6 +134,29 @@ class BoardWidget(QWidget):
                     5,
                     5
                 )
+
+    def drawCoordinate(self, painter):
+        if isDarkTheme():
+            painter.setPen(QPen(QColor(*WHITE, 140), 1))
+        else:
+            painter.setPen(QPen(QColor(*BLACK, 140), 1))
+
+        if self.board_size >= 600:
+            painter.setFont(QFont("Microsoft YaHei", 12))
+        else:
+            painter.setFont(QFont("Microsoft YaHei", 10))
+
+        for i in range(self.board_len):
+            painter.drawText(
+                self.margin_size[0] + (i + 0.5) * self.grid_size - 5,
+                self.board_size + self.margin_size[1] - 30,
+                chr(i + 97)
+            )
+            painter.drawText(
+                self.margin_size[0] - 13,
+                self.margin_size[1] + (i + 0.5) * self.grid_size + 4,
+                str(self.board_len - i)
+            )
 
     def drawPlayers(self, painter):
         """
@@ -422,20 +448,22 @@ class BoardWidget(QWidget):
 
     def mousePressEvent(self, event):
         super().mousePressEvent(event)
-        if not self.running:
-            return
-        if self.isAIThinking:
-            return
 
-        action = self.mouse_pos_to_action(event.x(), event.y())
-        s = self.doAction(action)
-        self.update()
+        if event.buttons() == Qt.LeftButton:
+            if not self.running:
+                return
+            if self.isAIThinking:
+                return
 
-        if s and self.running:
-            if self.robot is not None:
-                self.robotMove()
-            if self.MCTS_enabled:
-                self.nnMove()
+            action = self.mouse_pos_to_action(event.x(), event.y())
+            s = self.doAction(action)
+            self.update()
+
+            if s and self.running:
+                if self.robot is not None:
+                    self.robotMove()
+                if self.MCTS_enabled:
+                    self.nnMove()
 
     def refreshBoard(self):
         self.board.clear_board()
@@ -445,7 +473,7 @@ class BoardWidget(QWidget):
         self.green_final_territory = []
         for action in self.history[:self.current_step]:
             self.doAction(action, False)
-
+        self.onStepChanged.emit(self.current_step)
         self.update()
 
     def onRestart(self):
@@ -457,37 +485,22 @@ class BoardWidget(QWidget):
         self.refreshBoard()
 
     def onPrevious(self):
-        if self.isAIThinking:
-            return
-        if self.current_step <= 0:
-            return
-
-        self.current_step -= 1
-        self.refreshBoard()
+        self.setCurrentStep(self.current_step - 1)
 
     def onNext(self):
-        if self.isAIThinking:
-            return
-        if self.current_step >= len(self.history):
-            return
-
-        self.current_step += 1
-        self.refreshBoard()
+        self.setCurrentStep(self.current_step + 1)
 
     def onFirst(self):
-        if self.isAIThinking:
-            return
-        if self.current_step <= 0:
-            return
-        self.current_step = 0
-        self.refreshBoard()
+        self.setCurrentStep(0)
 
     def onLast(self):
+        self.setCurrentStep(len(self.history))
+
+    def setCurrentStep(self, index):
         if self.isAIThinking:
             return
-        if self.current_step >= len(self.history):
-            return
-        self.current_step = len(self.history)
+
+        self.current_step = index
         self.refreshBoard()
 
     def onSave(self):
@@ -625,6 +638,8 @@ class BoardWidget(QWidget):
             self.history = self.history[:self.current_step]
             self.history.append(action)
             self.current_step += 1
+            self.onHistoryChanged.emit(self.history)
+            self.onStepChanged.emit(self.current_step)
 
         if self.board.is_game_over_()[0]:
             self.running = False

@@ -6,6 +6,8 @@ from alphazero import AlphaZeroMCTS, PolicyValueNet, TerritoryMCTS
 from app.common.model_utils import testModel
 from app.config import *
 
+from multiprocessing import Pool
+
 
 class AIThread(QThread):
     """ AI """
@@ -19,18 +21,6 @@ class AIThread(QThread):
         board: ChessBoard
             棋盘
 
-        model: str
-            模型路径
-
-        c_puct: float
-            探索常数
-
-        n_iters: int
-            蒙特卡洛树搜索次数
-
-        is_use_gpu: bool
-            是否使用 GPU
-
         parent:
             父级
         """
@@ -40,13 +30,16 @@ class AIThread(QThread):
         self.n_iters = cfg.get(cfg.numIter)
         self.isUseGPU = cfg.get(cfg.useGPU)
         self.device = torch.device('cuda:0' if self.isUseGPU else 'cpu')
-        self.model = None
+        self.model = cfg.get(cfg.modelPath)
         self.mcts = None
         self.setModel(cfg.get(cfg.modelPath))
 
+
+
     def run(self):
         """ 根据当前局面获取动作 """
-        action = self.mcts.get_action(self.chessBoard)
+        p = Pool(1)
+        action = p.apply_async(self.mcts.get_action, (self.chessBoard,)).get()
         self.searchComplete.emit(action)
 
     def setModel(self, model=None, **kwargs):

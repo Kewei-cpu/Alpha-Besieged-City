@@ -7,19 +7,21 @@ from PySide6.QtCore import QUrl, QEventLoop, QTimer, QSize
 from PySide6.QtGui import QIcon, QDesktopServices
 from PySide6.QtWidgets import QApplication
 from qfluentwidgets import SplashScreen, FluentIcon, NavigationItemPosition, MessageBox, isDarkTheme, \
-    MSFluentWindow, NavigationAvatarWidget
+    MSFluentWindow
 
 from app.common import *
 from app.view import *
-import resources.resources
 
 base_dir = os.path.dirname(os.path.abspath(__file__))
+import resources.resources
 
 
 class Window(MSFluentWindow):
 
     def __init__(self):
         super().__init__()
+
+
 
         # create sub interface
         self.homeInterface = HomeInterface('Home', self)
@@ -72,15 +74,15 @@ class Window(MSFluentWindow):
         signalBus.micaEnableChanged.connect(self.setMicaEffectEnabled)
 
     def showMessageBox(self):
-        w = MessageBox(
+        box = MessageBox(
             '支持作者🥰',
             '个人开发不易，如果这个项目帮助到了您，可以考虑请作者喝一瓶快乐水🥤。您的支持就是作者开发和维护项目的动力🚀',
             self
         )
-        w.yesButton.setText('来啦老弟')
-        w.cancelButton.setText('下次一定')
+        box.yesButton.setText('来啦老弟')
+        box.cancelButton.setText('下次一定')
 
-        if w.exec():
+        if box.exec():
             QDesktopServices.openUrl(QUrl("https://afdian.net/a/zhiyiYo"))
 
     def setMicaEffectEnabled(self, isEnabled: bool):
