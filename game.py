@@ -1,34 +1,36 @@
 # coding:utf-8
-import sys, os
+import ctypes
+import os
+import sys
 
-from PySide6.QtCore import Qt, QUrl, QEventLoop, QTimer, QSize
+from PySide6.QtCore import QUrl, QEventLoop, QTimer, QSize
 from PySide6.QtGui import QIcon, QDesktopServices
-from PySide6.QtWidgets import QApplication, QFrame, QHBoxLayout
-from qfluentwidgets import SplashScreen, FluentWindow, FluentIcon, NavigationItemPosition, MessageBox, isDarkTheme
+from PySide6.QtWidgets import QApplication
+from qfluentwidgets import SplashScreen, FluentIcon, NavigationItemPosition, MessageBox, isDarkTheme, \
+    MSFluentWindow
 
 from app.common import *
 from app.view import *
-import ctypes
 
 base_dir = os.path.dirname(os.path.abspath(__file__))
+import resources.resources
 
 
-class Window(FluentWindow):
+class Window(MSFluentWindow):
 
     def __init__(self):
         super().__init__()
 
+
+
         # create sub interface
-        self.homeInterface = HomeInterface('Home Interface', self)
-        self.playFriendInterface = PlayFriendInterface('Player with Friends', self)
-        self.playRobotInterface = PlayRobotInterface('Player with Robots', self)
-        self.playMCTSInterface = PlayMCTSInterface('Player with MCTS', self)
-        self.settingInterface = SettingInterface('Setting Interface', self)
+        self.homeInterface = HomeInterface('Home', self)
+        self.playInterface = PlayInterface('Play', self)
+        self.settingInterface = SettingInterface('Setting', self)
 
         self.initNavigation()
         self.initWindow()
         self.connectSignalToSlot()
-
 
         self.splashScreen = SplashScreen(self.windowIcon(), self)
         self.splashScreen.setIconSize(QSize(102, 102))
@@ -40,30 +42,23 @@ class Window(FluentWindow):
 
     def initNavigation(self):
         self.addSubInterface(self.homeInterface, FluentIcon.HOME, 'Home')
-
-        self.navigationInterface.addSeparator()
-
-        self.addSubInterface(self.playFriendInterface, FluentIcon.PEOPLE, 'Play with Friends',
-                             NavigationItemPosition.SCROLL)
-        self.addSubInterface(self.playRobotInterface, FluentIcon.ROBOT, 'Play with Robots',
-                             NavigationItemPosition.SCROLL)
-        self.addSubInterface(self.playMCTSInterface, FluentIcon.IOT, 'Play with MCTS',
-                             NavigationItemPosition.SCROLL)
+        self.addSubInterface(self.playInterface, MyFluentIcon.GRID, 'Play')
 
         # add custom widget to bottom
         # self.navigationInterface.addWidget(
         #     routeKey='avatar',
-        #     widget=NavigationAvatarWidget('zhiyiYo', 'resource/shoko.png'),
+        #     widget=NavigationAvatarWidget('zhiyiYo', ':/logo/icon.png'),
         #     onClick=self.showMessageBox,
         #     position=NavigationItemPosition.BOTTOM,
         # )
 
-        self.addSubInterface(self.settingInterface, FluentIcon.SETTING, 'Settings', NavigationItemPosition.BOTTOM)
+        self.addSubInterface(self.settingInterface, FluentIcon.SETTING, 'Settings',
+                             position=NavigationItemPosition.BOTTOM)
 
     def initWindow(self):
 
         self.resize(900, 700)
-        self.setWindowIcon(QIcon(os.path.join(base_dir, 'resources', 'icon', 'icon.png')))
+        self.setWindowIcon(QIcon(':/logo/icon.ico'))
         self.setWindowTitle('Alpha Besieged City')
 
         desktop = QApplication.screens()[0].availableGeometry()
@@ -79,15 +74,15 @@ class Window(FluentWindow):
         signalBus.micaEnableChanged.connect(self.setMicaEffectEnabled)
 
     def showMessageBox(self):
-        w = MessageBox(
+        box = MessageBox(
             '支持作者🥰',
             '个人开发不易，如果这个项目帮助到了您，可以考虑请作者喝一瓶快乐水🥤。您的支持就是作者开发和维护项目的动力🚀',
             self
         )
-        w.yesButton.setText('来啦老弟')
-        w.cancelButton.setText('下次一定')
+        box.yesButton.setText('来啦老弟')
+        box.cancelButton.setText('下次一定')
 
-        if w.exec():
+        if box.exec():
             QDesktopServices.openUrl(QUrl("https://afdian.net/a/zhiyiYo"))
 
     def setMicaEffectEnabled(self, isEnabled: bool):

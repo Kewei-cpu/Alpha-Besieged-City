@@ -4,6 +4,8 @@ from PySide6.QtCore import QThread, Signal
 from alphazero import TerritoryMCTS
 from app.config import *
 
+from multiprocessing import Pool
+
 
 class AIThread(QThread):
     """ AI """
@@ -17,18 +19,6 @@ class AIThread(QThread):
         board: ChessBoard
             棋盘
 
-        model: str
-            模型路径
-
-        c_puct: float
-            探索常数
-
-        n_iters: int
-            蒙特卡洛树搜索次数
-
-        is_use_gpu: bool
-            是否使用 GPU
-
         parent:
             父级
         """
@@ -40,5 +30,6 @@ class AIThread(QThread):
 
     def run(self):
         """ 根据当前局面获取动作 """
-        action = self.mcts.get_action(self.chessBoard)
+        p = Pool(1)
+        action = p.apply_async(self.mcts.get_action, (self.chessBoard,)).get()
         self.searchComplete.emit(action)

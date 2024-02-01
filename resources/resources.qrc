@@ -1,0 +1,23 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+    <qresource prefix="logo">
+        <file alias="icon.ico">logo/icon.ico</file>
+        <file alias="icon.png">logo/icon.png</file>
+    </qresource>
+
+    <qresource prefix="icon">
+        <file alias="previous_black.svg">icon/ic_fluent_chevron_left_24_regular_black.svg</file>
+        <file alias="next_black.svg">icon/ic_fluent_chevron_right_24_regular_black.svg</file>
+        <file alias="first_black.svg">icon/ic_fluent_arrow_previous_24_regular_black.svg</file>
+        <file alias="last_black.svg">icon/ic_fluent_arrow_next_24_regular_black.svg</file>
+        <file alias="chip_black.svg">icon/ic_fluent_developer_board_24_regular_black.svg</file>
+        <file alias="grid_black.svg">icon/ic_fluent_grid_24_regular_black.svg</file>
+        
+        <file alias="previous_white.svg">icon/ic_fluent_chevron_left_24_regular_white.svg</file>
+        <file alias="next_white.svg">icon/ic_fluent_chevron_right_24_regular_white.svg</file>
+        <file alias="first_white.svg">icon/ic_fluent_arrow_previous_24_regular_white.svg</file>
+        <file alias="last_white.svg">icon/ic_fluent_arrow_next_24_regular_white.svg</file>
+        <file alias="chip_white.svg">icon/ic_fluent_developer_board_24_regular_white.svg</file>
+        <file alias="grid_white.svg">icon/ic_fluent_grid_24_regular_white.svg</file>
+    </qresource>
+</RCC>

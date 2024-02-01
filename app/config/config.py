@@ -61,12 +61,15 @@ class Config(QConfig):
     boardGridAlpha = RangeConfigItem(
         "Board", "GridAlpha", 20, RangeValidator(0, 100)
     )
+    showCoordinate = ConfigItem(
+        "Board", "ShowCoordinate", True, BoolValidator()
+    )
 
 
 
 YEAR = 2024
 AUTHOR = "kewei-cpu"
-VERSION = "1.0.0"
+VERSION = "1.0.1"
 
 FEEDBACK_URL = "https://github.com/kewei-cpu/Alpha-Besieged-City/issues"
 RELEASE_URL = "https://github.com/kewei-cpu/Alpha-Besieged-City/releases/latest"

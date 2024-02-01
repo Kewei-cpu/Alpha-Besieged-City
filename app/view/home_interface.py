@@ -1,10 +1,11 @@
 # coding:utf-8
-import sys, os
+import sys
 
 from PySide6.QtCore import Qt, QUrl
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout
 from qfluentwidgets import *
+
 
 def isWin11():
     return sys.platform == 'win32' and sys.getwindowsversion().build >= 22000
@@ -33,8 +34,7 @@ class AppInfoCard(SimpleCardWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        from game import base_dir
-        self.iconLabel = ImageLabel(os.path.join(base_dir, 'resources', 'icon', 'icon.png'), self)
+        self.iconLabel = ImageLabel(':/logo/icon.png', self)
         self.iconLabel.scaledToWidth(160)
 
         self.nameLabel = TitleLabel('Alpha Besieged City', self)
@@ -212,8 +212,6 @@ class RobotInfoCard(HeaderCardWidget):
         self.contentLayout.addWidget(self.descriptionLabel)
 
         self.viewLayout.addLayout(self.contentLayout)
-
-
 
 
 class HomeInterface(SingleDirectionScrollArea):
