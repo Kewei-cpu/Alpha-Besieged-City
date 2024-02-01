@@ -556,6 +556,7 @@ class BoardWidget(CardWidget):
             game_dict = json.load(f)
             try:
                 self.history = game_dict["Moves"]
+                self.onHistoryChanged.emit(self.history)
                 self.current_step = 0
                 self.refreshBoard()
             except Exception:

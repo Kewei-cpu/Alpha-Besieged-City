@@ -147,7 +147,6 @@ class PlayInterface(QWidget):
         self.board_interface.currentWidget().onHistoryChanged.connect(self.refreshSteps)
         self.board_interface.currentWidget().onStepChanged.connect(self.refreshActiveStep)
 
-
     def initShortcuts(self):
         self.short_left = QShortcut(QKeySequence(Qt.Key_Left), self)
         self.short_right = QShortcut(QKeySequence(Qt.Key_Right), self)
@@ -186,7 +185,10 @@ class PlayInterface(QWidget):
         self.step_card.addSteps(history)
 
     def refreshActiveStep(self, index):
-        self.step_card.setActiveStep(index - 1)
+        if index == 0:
+            self.step_card.setAllInactive()
+        else:
+            self.step_card.setActiveStep(index - 1)
 
     def onAddFriendTab(self):
         self.addTab(FluentIcon.PEOPLE)
