@@ -4,6 +4,7 @@ from PySide6.QtCore import QThread, Signal
 
 from alphazero import AlphaZeroMCTS, PolicyValueNet, TerritoryMCTS
 from app.common.model_utils import testModel
+from app.common.multiprocess_mcts import runMCTS
 from app.config import *
 
 from multiprocessing import Pool
@@ -38,8 +39,7 @@ class AIThread(QThread):
 
     def run(self):
         """ 根据当前局面获取动作 """
-        p = Pool(1)
-        action = p.apply_async(self.mcts.get_action, (self.chessBoard,)).get()
+        action = self.mcts.get_action(self.chessBoard)
         self.searchComplete.emit(action)
 
     def setModel(self, model=None, **kwargs):
