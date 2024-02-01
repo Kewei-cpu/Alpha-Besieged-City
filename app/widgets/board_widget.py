@@ -136,6 +136,9 @@ class BoardWidget(CardWidget):
                 )
 
     def drawCoordinate(self, painter):
+        if not cfg.get(cfg.showCoordinate):
+            return
+
         if isDarkTheme():
             painter.setPen(QPen(QColor(*WHITE, 140), 1))
         else:

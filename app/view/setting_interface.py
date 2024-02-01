@@ -3,8 +3,7 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QWidget, QFileDialog
 from qfluentwidgets import (SettingCardGroup, SwitchSettingCard, OptionsSettingCard, RangeSettingCard, ColorSettingCard,
-                            ScrollArea,
-                            ExpandLayout, Theme, InfoBar, setTheme, FluentIcon, TitleLabel)
+                            ScrollArea, ExpandLayout, Theme, InfoBar, setTheme, FluentIcon, TitleLabel)
 
 from app.common import *
 from app.config import *
@@ -79,6 +78,13 @@ class SettingInterface(ScrollArea):
             "Change the opacity of the board gird",
             parent=self.AppearanceGroup
         )
+        self.showCoordinateCard = SwitchSettingCard(
+            FluentIcon.FONT,
+            "Show Coordinate",
+            "Show the coordinate of the board",
+            configItem=cfg.showCoordinate,
+            parent=self.AppearanceGroup
+        )
 
         self.AppearanceGroup.addSettingCard(self.themeModeCard)
         self.AppearanceGroup.addSettingCard(self.enableAcrylicCard)
@@ -87,7 +93,7 @@ class SettingInterface(ScrollArea):
         self.AppearanceGroup.addSettingCard(self.boardBackgroundAlphaCard)
         self.AppearanceGroup.addSettingCard(self.boardGridColorCard)
         self.AppearanceGroup.addSettingCard(self.boardGridAlphaCard)
-
+        self.AppearanceGroup.addSettingCard(self.showCoordinateCard)
 
         self.MCTSGroup = SettingCardGroup("MCTS", self.scrollWidget)
 
@@ -197,4 +203,3 @@ class SettingInterface(ScrollArea):
         self.modelFolderCard.setContent(path[0])
         signalBus.modelChanged.emit()
         self.__showSuccessTooltip()
-
